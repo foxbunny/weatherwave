@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="description" content="Weather forecast with historical weather">
+
+		<link rel="stylesheet" media="screen" href="index.screen.css">
+
+		<script type="module" src="index.client.js"></script>
+
+		<title>Weatherwave - Weather forecast with history</title>
+	</head>
+	<body>
+		<header>
+			<h1>Weatherwave</h1>
+
+			<div id="_locationSelector">
+				<label>
+					Search locations:
+					<input id="_locationSearch" type="text">
+				</label>
+				<label>
+					Select a location:
+					<select id="_locationList" name="location"></select>
+				</label>
+				<p>Use the search to populate the location list</p>
+			</div>
+
+			<div id="_currentLocation" hidden>
+				<p id="_currentLocationDisplay"></p>
+				<button id="_changeLocation">Change location</button>
+			</div>
+		</header>
+
+		<noscript>
+			<h2>JavaScript required</h2>
+
+			<p>Weatherwave is a JavaScript web application. Your browser does not support JavaScript. Please
+				use a different
+				browser or enable JavaScript.</p>
+		</noscript>
+
+		<main>
+			<section id="_weatherForecast" hidden>
+				<h2>10-day forecast</h2>
+			</section>
+		</main>
+	</body>
+</html>
