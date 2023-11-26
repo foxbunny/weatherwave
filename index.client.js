@@ -341,56 +341,6 @@ let global = new EventBus({location: null})
 		return forecastDoc
 	}
 
-	class Heatmap {
-		constructor(forecastKey, heatmapClassName = forecastKey, icon = heatmapClassName) {
-			this.forecastKey = forecastKey
-			this.heatmapClassName = heatmapClassName
-			this.heatmapGradientColors = []
-			this.icon = icon
-		}
-
-		addGradientColor(forecast) {
-			this.heatmapGradientColors.push(forecast[this.forecastKey].color)
-		}
-
-		render() {
-			let element = Object.assign(utils.createElement('div'), {
-				className: this.heatmapClassName + ' heatmap',
-			})
-			element.append(renderIcon(this.icon))
-			element.style.setProperty('--gradient-stops', this.heatmapGradientColors.join(','))
-			return element
-		}
-	}
-
-	class DaylightHeatmap extends Heatmap {
-		constructor(forecastKey, heatmapClassName = forecastKey, icon = heatmapClassName, dawnIcon = 'sun', duskIcon = 'moon') {
-			super(forecastKey, heatmapClassName, icon)
-			this.dawnIcon = dawnIcon
-			this.duskIcon = duskIcon
-			this.dawnIndex = -1
-			this.duskIndex = -1
-		}
-
-		addGradientColor(forecast) {
-			let daylight = forecast[this.forecastKey]
-			if (daylight.isDawn) this.dawnIndex = this.heatmapGradientColors.length
-			if (daylight.isDusk) this.duskIndex = this.heatmapGradientColors.length
-			super.addGradientColor(forecast)
-		}
-
-		render() {
-			let element = super.render()
-			element.append(
-				utils.assignAttributes(renderIcon(this.dawnIcon), {class: 'icon dawn'}),
-				utils.assignAttributes(renderIcon(this.duskIcon), {class: 'icon dusk'}),
-			)
-			element.style.setProperty('--dawn-pos', this.dawnIndex / this.heatmapGradientColors.length * 100 + '%')
-			element.style.setProperty('--dusk-pos', this.duskIndex / this.heatmapGradientColors.length * 100 + '%')
-			return element
-		}
-	}
-
 	function renderHourlyVisualization(hourlyForecasts) {
 		// Heatmaps
 
@@ -478,6 +428,56 @@ let global = new EventBus({location: null})
 		return svg
 	}
 
+	class Heatmap {
+		constructor(forecastKey, heatmapClassName = forecastKey, icon = heatmapClassName) {
+			this.forecastKey = forecastKey
+			this.heatmapClassName = heatmapClassName
+			this.heatmapGradientColors = []
+			this.icon = icon
+		}
+
+		addGradientColor(forecast) {
+			this.heatmapGradientColors.push(forecast[this.forecastKey].color)
+		}
+
+		render() {
+			let element = Object.assign(utils.createElement('div'), {
+				className: this.heatmapClassName + ' heatmap',
+			})
+			element.append(renderIcon(this.icon))
+			element.style.setProperty('--gradient-stops', this.heatmapGradientColors.join(','))
+			return element
+		}
+	}
+
+	class DaylightHeatmap extends Heatmap {
+		constructor(forecastKey, heatmapClassName = forecastKey, icon = heatmapClassName, dawnIcon = 'sun', duskIcon = 'moon') {
+			super(forecastKey, heatmapClassName, icon)
+			this.dawnIcon = dawnIcon
+			this.duskIcon = duskIcon
+			this.dawnIndex = -1
+			this.duskIndex = -1
+		}
+
+		addGradientColor(forecast) {
+			let daylight = forecast[this.forecastKey]
+			if (daylight.isDawn) this.dawnIndex = this.heatmapGradientColors.length
+			if (daylight.isDusk) this.duskIndex = this.heatmapGradientColors.length
+			super.addGradientColor(forecast)
+		}
+
+		render() {
+			let element = super.render()
+			element.append(
+				utils.assignAttributes(renderIcon(this.dawnIcon), {class: 'icon dawn'}),
+				utils.assignAttributes(renderIcon(this.duskIcon), {class: 'icon dusk'}),
+			)
+			element.style.setProperty('--dawn-pos', this.dawnIndex / this.heatmapGradientColors.length * 100 + '%')
+			element.style.setProperty('--dusk-pos', this.duskIndex / this.heatmapGradientColors.length * 100 + '%')
+			return element
+		}
+	}
+
 	// Utility functions
 
 	function asIs(something) {
@@ -490,9 +490,5 @@ let global = new EventBus({location: null})
 
 	function isDateSameYear(dateA, dateB) {
 		return dateA.getFullYear() == dateB.getFullYear()
-	}
-
-	function duplicateLast(array) {
-		array.push(array.at(-1))
 	}
 } // <-- See weather forecast
