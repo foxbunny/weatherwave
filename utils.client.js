@@ -8,7 +8,6 @@ class EventBus {
 	}
 
 	constructor(initialState, options) {
-		super()
 		options = {...globalBusOptions, ...options}
 		this.debug = options.debug
 		this.data = Object.seal(initialState)
@@ -81,6 +80,10 @@ class GroupMap {
 	get(key) {
 		return this.map.get(key)
 	}
+
+	entries() {
+		return Array.from(this.map.entries())
+	}
 }
 
 function debounce(callback, delay = 200) {
@@ -90,10 +93,6 @@ function debounce(callback, delay = 200) {
 		timer = setTimeout(callback, delay, ...args)
 	}
 }
-
-let createElement = document.createElement.bind(document)
-let createSVG = document.createElementNS.bind(document, 'http://www.w3.org/2000/svg')
-let createFrag = document.createDocumentFragment.bind(document)
 
 function assignAttributes(node, obj) {
 	for (let name in obj) node.setAttribute(name, obj[name])
@@ -122,6 +121,10 @@ function html(strings, ...values) {
 		toString() { return result }
 	}
 }
+
+let createElement = document.createElement.bind(document)
+let createSVG = document.createElementNS.bind(document, 'http://www.w3.org/2000/svg')
+let createFrag = document.createDocumentFragment.bind(document)
 
 export {
 	EventBus,

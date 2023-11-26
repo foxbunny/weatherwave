@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg">
+    <style>
+    </style>
+    <defs>
+        <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#3e46e1"/>
+            <stop offset="0.4" stop-color="#00b89d"/>
+            <stop offset="0.67" stop-color="#ebdb1b"/>
+            <stop offset="0.86" stop-color="#e3730a"/>
+            <stop offset="1" stop-color="#fe0000"/>
+        </linearGradient>
+
+        <symbol id="fog" viewBox="0 0 24 24">
+            <path d="M10.084,18.814c-0,-0.552 -0.448,-1 -1,-1l-1.75,0c-0.552,0 -1,0.448 -1,1c-0,0.552 0.448,1 1,1l1.75,0c0.552,0 1,-0.448 1,-1Z"
+                  fill="#c4cdd5" stroke="var(--stroke)" stroke-width="0.3" vector-effect="non-scaling-stroke"/>
+            <path d="M16.607,18.814c0,-0.552 -0.448,-1 -1,-1l-3.75,0c-0.552,0 -1,0.448 -1,1c0,0.552 0.448,1 1,1l3.75,0c0.552,0 1,-0.448 1,-1Z"
+                  fill="#c4cdd5" stroke="var(--stroke)" stroke-width="0.3" vector-effect="non-scaling-stroke"/>
+            <path d="M14.75,8.814c-0,-0.552 -0.448,-1 -1,-1l-2.286,0c-0.552,0 -1,0.448 -1,1c0,0.552 0.448,1 1,1l2.286,0c0.552,0 1,-0.448 1,-1Z"
+                  fill="#afc6dd" stroke="var(--stroke)" stroke-width="0.3" vector-effect="non-scaling-stroke"/>
+            <path d="M10.084,10.628c-0,-0.552 -0.448,-1 -1,-1l-4,0c-0.552,0 -1,0.448 -1,1c-0,0.552 0.448,1 1,1l4,0c0.552,0 1,-0.448 1,-1Z"
+                  fill="#afc6dd" stroke="var(--stroke)" stroke-width="0.3" vector-effect="non-scaling-stroke"/>
+            <path d="M11.25,5.186c-0,-0.552 -0.448,-1 -1,-1l-2.916,-0c-0.552,-0 -1,0.448 -1,1c-0,0.552 0.448,1 1,1l2.916,-0c0.552,-0 1,-0.448 1,-1Z"
+                  fill="#afc6dd" stroke="var(--stroke)" stroke-width="0.3" vector-effect="non-scaling-stroke"/>
+            <path d="M19.318,14.513c0,-0.552 -0.448,-1 -1,-1l-7.234,-0c-0.552,-0 -1,0.448 -1,1c-0,0.552 0.448,1 1,1l7.234,-0c0.552,-0 1,-0.448 1,-1Z"
+                  fill="#8796a6" stroke="var(--stroke)" stroke-width="0.3" vector-effect="non-scaling-stroke"/>
+            <path d="M18.25,7.814c-0,-0.552 -0.448,-1 -1,-1l-5,0c-0.552,0 -1,0.448 -1,1c-0,0.552 0.448,1 1,1l5,0c0.552,0 1,-0.448 1,-1Z"
+                  fill="#8da0b3" stroke="var(--stroke)" stroke-width="0.3" vector-effect="non-scaling-stroke"/>
+            <path d="M21.357,15.814c0,-0.552 -0.448,-1 -1,-1l-7.5,0c-0.552,0 -1,0.448 -1,1c0,0.552 0.448,1 1,1l7.5,0c0.552,0 1,-0.448 1,-1Z"
+                  fill="#dfefff" stroke="var(--stroke)" stroke-width="0.3" vector-effect="non-scaling-stroke"/>
+            <path d="M16.607,4.186c0,-0.552 -0.448,-1 -1,-1l-6,-0c-0.552,-0 -1,0.448 -1,1c0,0.552 0.448,1 1,1l6,-0c0.552,-0 1,-0.448 1,-1Z"
+                  fill="#afc6dd" stroke="var(--stroke)" stroke-width="0.3" vector-effect="non-scaling-stroke"/>
+            <path d="M16.916,11.814c0,-0.552 -0.448,-1 -1,-1l-7.5,0c-0.552,0 -1,0.448 -1,1c0,0.552 0.448,1 1,1l7.5,0c0.552,0 1,-0.448 1,-1Z"
+                  fill="#c4d1df" stroke="var(--stroke)" stroke-width="0.3" vector-effect="non-scaling-stroke"/>
+            <path d="M19.407,19.814c0,-0.552 -0.448,-1 -1,-1l-12.482,0c-0.552,0 -1,0.448 -1,1c-0,0.552 0.448,1 1,1l12.482,0c0.552,0 1,-0.448 1,-1Z"
+                  fill="#aebac6" stroke="var(--stroke)" stroke-width="0.3" vector-effect="non-scaling-stroke"/>
+        </symbol>
+        <symbol id="humidity" viewBox="0 0 24 24">
+            <path d="M10,4.371c0,-0.552 -0.448,-1 -1,-1l-5,0c-0.552,0 -1,0.448 -1,1c0,0.552 0.448,1 1,1l5,0c0.552,0 1,-0.448 1,-1Z"
+                  fill="#51a8ff" stroke="var(--stroke)" stroke-width="0.3" vector-effect="non-scaling-stroke"/>
+            <path d="M13.544,4.371c0,-0.552 -0.448,-1 -1,-1c-0.552,0 -1,0.448 -1,1c0,0.552 0.448,1 1,1c0.552,0 1,-0.448 1,-1Z"
+                  fill="#51a8ff" stroke="var(--stroke)" stroke-width="0.3" vector-effect="non-scaling-stroke"/>
+            <path d="M21.857,19c0,-0.552 -0.448,-1 -1,-1l-5.158,0c-0.552,0 -1,0.448 -1,1c-0,0.552 0.448,1 1,1l5.158,0c0.552,0 1,-0.448 1,-1Z"
+                  fill="#51a8ff" stroke="var(--stroke)" stroke-width="0.3" vector-effect="non-scaling-stroke"/>
+            <path d="M8,9c0,-0.552 -0.448,-1 -1,-1l-2,-0c-0.552,-0 -1,0.448 -1,1c0,0.552 0.448,1 1,1l2,-0c0.552,-0 1,-0.448 1,-1Z"
+                  fill="#51a8ff" stroke="var(--stroke)" stroke-width="0.3" vector-effect="non-scaling-stroke"/>
+            <path d="M22,13.824c0,-0.552 -0.448,-1 -1,-1l-0.143,0c-0.552,0 -1,0.448 -1,1c0,0.552 0.448,1 1,1l0.143,0c0.552,0 1,-0.448 1,-1Z"
+                  fill="#51a8ff" stroke="var(--stroke)" stroke-width="0.3" vector-effect="non-scaling-stroke"/>
+            <path d="M22,9c0,-0.552 -0.448,-1 -1,-1l-3,-0c-0.552,-0 -1,0.448 -1,1c0,0.552 0.448,1 1,1l3,-0c0.552,-0 1,-0.448 1,-1Z"
+                  fill="#51a8ff" stroke="var(--stroke)" stroke-width="0.3" vector-effect="non-scaling-stroke"/>
+            <path d="M8.807,19c-0,-0.552 -0.448,-1 -1,-1c-0.552,0 -1,0.448 -1,1c-0,0.552 0.448,1 1,1c0.552,0 1,-0.448 1,-1Z"
+                  fill="#51a8ff" stroke="var(--stroke)" stroke-width="0.3" vector-effect="non-scaling-stroke"/>
+            <path d="M12.5,6.5c0,-0 3.693,3.892 3.693,6.481c0,2.589 -2.394,3.519 -3.693,3.519c-1.299,-0 -3.693,-0.93 -3.693,-3.519c-0,-2.589 3.693,-6.481 3.693,-6.481Z"
+                  fill="#51a8ff" stroke="var(--stroke)" stroke-width="0.3" vector-effect="non-scaling-stroke"/>
+            <path d="M14.506,12.249c0,0 0.591,0.956 0,1.818c-0.557,0.812 -1.217,0.92 -1.217,0.92" fill="none"
+                  stroke="#fff" stroke-width="0.86" vector-effect="non-scaling-stroke"/>
+        </symbol>
+        <symbol id="precipitation" viewBox="0 0 24 24">
+            <path d="M10.26,6.719c-0,-0 -0.092,3.506 -1.289,4.702c-1.196,1.197 -2.733,0.52 -3.333,-0.08c-0.601,-0.601 -1.277,-2.137 -0.081,-3.334c1.197,-1.196 4.703,-1.288 4.703,-1.288Z"
+                  fill="#51a8ff" stroke="var(--stroke)" stroke-width="0.3" vector-effect="non-scaling-stroke"/>
+            <path d="M14.296,9.292c-0,-0 -0.141,5.364 -1.972,7.194c-1.83,1.831 -4.181,0.795 -5.1,-0.123c-0.918,-0.919 -1.953,-3.269 -0.123,-5.1c1.831,-1.83 7.195,-1.971 7.195,-1.971Z"
+                  fill="#51a8ff" stroke="var(--stroke)" stroke-width="0.3" vector-effect="non-scaling-stroke"/>
+            <path d="M11.649,14.776c-0,-0 -0.258,1.094 -1.286,1.285c-0.968,0.181 -1.511,-0.21 -1.511,-0.21" fill="none"
+                  stroke="#fff" stroke-width="0.86" vector-effect="non-scaling-stroke"/>
+            <path d="M20.247,10.171c0,-0 -0.092,3.506 -1.288,4.702c-1.197,1.197 -2.734,0.52 -3.334,-0.08c-0.6,-0.601 -1.277,-2.137 -0.08,-3.334c1.196,-1.196 4.702,-1.288 4.702,-1.288Z"
+                  fill="#51a8ff" stroke="var(--stroke)" stroke-width="0.3" vector-effect="non-scaling-stroke"/>
+            <path d="M15.862,4.31c0,-0 -0.06,2.31 -0.849,3.098c-0.788,0.788 -1.8,0.343 -2.196,-0.053c-0.395,-0.395 -0.841,-1.408 -0.053,-2.196c0.788,-0.789 3.098,-0.849 3.098,-0.849Z"
+                  fill="#51a8ff" stroke="var(--stroke)" stroke-width="0.3" vector-effect="non-scaling-stroke"/>
+            <path d="M15.534,16.816c0,-0 -0.061,2.31 -0.849,3.098c-0.788,0.788 -1.801,0.342 -2.196,-0.053c-0.396,-0.396 -0.841,-1.408 -0.053,-2.196c0.788,-0.789 3.098,-0.849 3.098,-0.849Z"
+                  fill="#51a8ff" stroke="var(--stroke)" stroke-width="0.3" vector-effect="non-scaling-stroke"/>
+        </symbol>
+        <symbol id="sun" viewBox="0 0 24 24">
+            <path d="M7.496,7.403c1.218,-2.139 1.145,-3.753 1.145,-3.753c0,0 1.065,1.215 3.425,1.914c2.374,-0.651 3.463,-1.843 3.463,-1.843c0,-0 -0.106,1.611 1.068,3.775c2.139,1.218 3.753,1.145 3.753,1.145c-0,0 -1.215,1.065 -1.914,3.425c0.651,2.374 1.843,3.463 1.843,3.463c0,0 -1.611,-0.106 -3.775,1.068c-1.218,2.139 -1.145,3.753 -1.145,3.753c-0,-0 -1.065,-1.215 -3.425,-1.914c-2.374,0.651 -3.463,1.843 -3.463,1.843c-0,0 0.106,-1.611 -1.068,-3.775c-2.139,-1.218 -3.753,-1.145 -3.753,-1.145c0,-0 1.215,-1.065 1.914,-3.425c-0.651,-2.374 -1.843,-3.463 -1.843,-3.463c-0,-0 1.611,0.106 3.775,-1.068Zm4.504,-1.703c-3.477,0 -6.3,2.823 -6.3,6.3c0,3.477 2.823,6.3 6.3,6.3c3.477,0 6.3,-2.823 6.3,-6.3c-0,-3.477 -2.823,-6.3 -6.3,-6.3Z"
+                  fill="#ffd000" stroke="var(--stroke)" stroke-width="0.3" vector-effect="non-scaling-stroke"/>
+            <path d="M6.054,9.537c0.282,-2.445 -0.418,-3.901 -0.418,-3.901c0,0 1.456,0.7 3.901,0.418c1.928,-1.53 2.463,-3.054 2.463,-3.054c0,0 0.535,1.524 2.463,3.054c2.445,0.282 3.901,-0.418 3.901,-0.418c-0,0 -0.7,1.456 -0.418,3.901c1.53,1.928 3.054,2.463 3.054,2.463c0,-0 -1.524,0.535 -3.054,2.463c-0.282,2.445 0.418,3.901 0.418,3.901c-0,-0 -1.456,-0.7 -3.901,-0.418c-1.928,1.53 -2.463,3.054 -2.463,3.054c0,0 -0.535,-1.524 -2.463,-3.054c-2.445,-0.282 -3.901,0.418 -3.901,0.418c0,-0 0.7,-1.456 0.418,-3.901c-1.53,-1.928 -3.054,-2.463 -3.054,-2.463c0,-0 1.524,-0.535 3.054,-2.463Zm5.946,-3.837c-3.477,0 -6.3,2.823 -6.3,6.3c0,3.477 2.823,6.3 6.3,6.3c3.477,0 6.3,-2.823 6.3,-6.3c0,-3.477 -2.823,-6.3 -6.3,-6.3Z"
+                  fill="#ff8b00" stroke="var(--stroke)" stroke-width="0.3" vector-effect="non-scaling-stroke"/>
+            <circle cx="12" cy="12" r="6.3" fill="#ffd700" stroke="var(--stroke)" stroke-width="var(--stroke-width)"/>
+        </symbol>
+        <symbol id="moon" viewBox="0 0 24 24">
+            <path d="M8,5.072c-3.824,2.207 -5.136,7.104 -2.928,10.928c2.207,3.824 7.104,5.136 10.928,2.928c3.824,-2.207 5.136,-7.104 2.928,-10.928c-2.207,-3.824 -7.104,-5.136 -10.928,-2.928Z"
+                  fill="#262000" stroke="var(--stroke)" stroke-width="0.3" vector-effect="non-scaling-stroke"/>
+            <path d="M13.04,5.235c-0.646,0.111 -1.284,0.335 -1.885,0.682c-2.72,1.57 -3.654,5.054 -2.083,7.774c1.57,2.72 5.053,3.653 7.773,2.083c0.601,-0.347 1.115,-0.788 1.533,-1.292c-0.544,1.403 -1.552,2.636 -2.955,3.446c-3.272,1.889 -7.462,0.767 -9.351,-2.505c-1.889,-3.272 -0.767,-7.462 2.505,-9.351c1.404,-0.81 2.976,-1.067 4.463,-0.837Z"
+                  fill="#ffd700" stroke="none" stroke-width="0.3" vector-effect="non-scaling-stroke"/>
+        </symbol>
+        <symbol id="temperature" viewBox="0 0 24 24">
+            <path d="M14,14.536c1.195,0.692 2,1.985 2,3.464c0,2.208 -1.792,4 -4,4c-2.208,0 -4,-1.792 -4,-4c0,-1.479 0.805,-2.772 2,-3.464l0,-10.536c0,-1.104 0.896,-2 2,-2c1.104,0 2,0.896 2,2l-0,10.536Z"
+                  fill="none" stroke="var(--stroke)" stroke-width="0.3" vector-effect="non-scaling-stroke" />
+            <path d="M13,15.354c1.068,0.405 1.828,1.437 1.828,2.646c-0,1.561 -1.267,2.828 -2.828,2.828c-1.561,-0 -2.828,-1.267 -2.828,-2.828c0,-1.209 0.76,-2.241 1.828,-2.646l0,-8.354l2,0l0,8.354Z"
+                  fill="url(#g1)" />
+        </symbol>
+    </defs>
+</svg>

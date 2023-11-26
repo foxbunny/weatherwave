@@ -58,6 +58,7 @@ let global = new EventBus({location: null})
 
 { // See current location -->
 	let local = new EventBus()
+
 	global.addEventListener('data.location', function () {
 		_currentLocationDisplay.textContent = 'Showing weather for ' + global.get('location').display
 		_currentLocation.hidden = false
@@ -117,16 +118,22 @@ let global = new EventBus({location: null})
 		{value: 30, h: 214, s: 62, l: 69},
 		{value: 100, h: 214, s: 86, l: 51},
 	] // <-- precipitationHeatmapColors
-	let dewPointHeatmapColors = ['hsl(0 0% 100%)', 'hsl(0 0% 86%)']
+	let dewPointHeatmapColors = ['hsl(0, 0%, 100%)', 'hsl(0, 0%, 86%)']
 	let humidityHeatmapColors = [
 		{value: 0, h: 215, s: 0, l: 80},
 		{value: 50, h: 215, s: 30, l: 80},
 		{value: 85, h: 215, s: 50, l: 80},
 		{value: 100, h: 215, s: 87, l: 38},
-	]
+	] // <-- humidityHeatmapColors
+	let cloudCoverHeatmapColors = [
+		[0, 193, 82, 69],
+		[50, 180, 28, 56],
+		[100, 180, 2, 56],
+	] // <-- cloudCoverHeatmapColors
+	let dayNightHeatmapColors = ['hsl(238, 8%, 10%)', 'hsl(193, 82%, 69%)']
 	let precipitationGradientColor = '#2fadc6'
 
-	let forecastApiUrl = 'https://api.open-meteo.com/v1/forecast?hourly=temperature_2m,relative_humidity_2m,dew_point_2m,precipitation_probability,rain,showers,snowfall,weather_code,surface_pressure,wind_speed_10m,wind_direction_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,sunrise,sunset,daylight_duration,sunshine_duration,rain_sum,showers_sum,snowfall_sum,precipitation_hours,precipitation_probability_max'
+	let forecastApiUrl = 'https://api.open-meteo.com/v1/forecast?hourly=temperature_2m,relative_humidity_2m,dew_point_2m,precipitation_probability,precipitation,cloud_cover,weather_code,surface_pressure,wind_speed_10m,wind_direction_10m,is_day'
 
 	global.addEventListener('data.location', function () {
 		let loc = global.get('location')
@@ -144,89 +151,72 @@ let global = new EventBus({location: null})
 
 	local.addEventListener('forecastRetrieved.success', function (ev) {
 		let response = ev.detail.response
-		local.set('forecasts', {
-			hourly: convertHourlyForecastToGroup(response.hourly, response.hourly_units),
-			daily: convertDailyForecastToGroup(response.daily, response.daily_units),
-		})
+		local.set('forecasts', convertHourlyForecastToGroup(response.hourly, response.hourly_units))
 	})
 
 	local.addEventListener('data.forecasts', function () {
 		let forecasts = local.get('forecasts')
-		_weatherForecast.append(...forecasts.daily.map(function (dailyForecast) {
-			let date = dailyForecast.date
-			let hourlyForecast = forecasts.hourly.get(date)
-			return renderHourlyForecast(date, hourlyForecast, dailyForecast)
+		_weatherForecast.append(...forecasts.entries().map(function ([date, forecasts]) {
+			return renderHourlyForecast(date, forecasts)
 		}))
 		_weatherForecast.hidden = false
 	})
 
+	// Converters
+
 	function convertHourlyForecastToGroup(forecasts, units) {
 		let hourlyForecastsByDate = new utils.GroupMap(convertHourlyForecastToDatestamp)
+		let previousDaylightValue = forecasts.is_day[0]
 		for (let i = 0, time; time = forecasts.time[i]; i++) {
-			let convertToDataObj = convertValueAtIndexToDataObj.bind(null, forecasts, units, i)
+			let hour = convertDateToFormattedHours(time)
+			let weather = convertWeatherCodeToWeatherType(forecasts.weather_code[i])
+			let isDay = forecasts.is_day[i]
+			let daylight = {
+				value: isDay,
+				color: dayNightHeatmapColors[+isDay],
+				isDawn: previousDaylightValue < isDay,
+				isDusk: previousDaylightValue > isDay,
+			} // <-- daylight
+			previousDaylightValue = isDay
+			let temperature = {
+				value: forecasts.temperature_2m[i],
+				color: convertValueToHeatmap(temperatureHeatmapColors, forecasts.temperature_2m[i]),
+				unit: units.temperature_2m,
+			} // <-- temperature
+			let precipitationProbability = {
+				value: forecasts.precipitation_probability[i],
+				color: convertValueToHeatmap(precipitationHeatmapColors, forecasts.precipitation_probability[i]),
+				unit: units.precipitation_probability,
+			} // <-- precipitationProbability
+			let relativeHumidity = {
+				value: forecasts.relative_humidity_2m[i],
+				color: convertValueToHeatmap(humidityHeatmapColors, forecasts.relative_humidity_2m[i]),
+				unit: units.relativeHumidity,
+			} // <-- relativeHumidity
+			let hasFog = forecasts.temperature_2m[i] < forecasts.dew_point_2m[i]
+			let cloudCover = {
+				value: forecasts.cloud_cover[i],
+				color: convertValueToHeatmap(cloudCoverHeatmapColors, forecasts.cloud_cover[i]),
+				unit: units.cloud_cover,
+			} // <-- cloudCover
+			let fog = {
+				value: hasFog ? 'fog' : 'no fog',
+				color: dewPointHeatmapColors[+hasFog],
+			} // <-- fog
+
 			hourlyForecastsByDate.add({
 				time,
-
-				// Weather
-				weather: convertWeatherCodeToWeatherType(forecasts.weather_code[i]),
-
-				// Temperatures
-				dewPoint: convertToDataObj('dew_point_2m'),
-				temperature: convertToDataObj('temperature_2m'),
-
-				// Precipitation
-				precipitationProbability: convertToDataObj('precipitation_probability'),
-				rain: convertToDataObj('rain'),
-				showers: convertToDataObj('showers'),
-				snowfall: convertToDataObj('snowfall'),
-
-				// Atmospheric conditions
-				relativeHumidity: convertToDataObj('relative_humidity_2m'),
-				pressure: convertToDataObj('surface_pressure'),
-
-				// Wind
-				windDirection: convertToDataObj('wind_direction_10m'),
-				windSpeed: convertToDataObj('wind_speed_10m'),
+				hour,
+				weather,
+				daylight,
+				temperature,
+				precipitationProbability,
+				relativeHumidity,
+				cloudCover,
+				fog,
 			})
 		}
 		return hourlyForecastsByDate
-	}
-
-	function convertDailyForecastToGroup(forecasts, units) {
-		return forecasts.time.map(function (date, i) {
-			let convertToDataObj = convertValueAtIndexToDataObj.bind(null, forecasts, units, i)
-			return {
-				date,
-
-				// Weather
-				weather: convertWeatherCodeToWeatherType(forecasts.weather_code[i]),
-
-				// Temperature
-				temperatureMax: convertToDataObj('temperature_2m_max'),
-				temperatureMin: convertToDataObj('temperature_2m_min'),
-				apparentTemperatureMax: convertToDataObj('apparent_temperature_max'),
-				apparentTemperatureMin: convertToDataObj('apparent_temperature_min'),
-
-				// Precipitation
-				precipitationHours: convertToDataObj('precipitation_hours'),
-				rainSum: convertToDataObj('rain_sum'),
-				showersSum: convertToDataObj('showers_sum'),
-				snowfallSum: convertToDataObj('snowfall_sum'),
-
-				// Sun
-				sunrise: convertToDataObj('sunrise', convertAnythingToDate),
-				sunset: convertToDataObj('sunset', convertAnythingToDate),
-				daylightDuration: convertToDataObj('daylight_duration'),
-				sunshineDuration: convertToDataObj('sunshine_duration'),
-			}
-		})
-	}
-
-	function convertValueAtIndexToDataObj(forecast, units, index, key, parse = asIs) {
-		return {
-			value: parse(forecast[key][index]),
-			unit: units[key],
-		}
 	}
 
 	function convertWeatherCodeToWeatherType(code) {
@@ -298,11 +288,49 @@ let global = new EventBus({location: null})
 	}
 
 	function convertDateToDatestamp(date) {
-		return date.toLocaleDateString('en-ca')
+		return date.toLocaleDateString('en-ca') // YYYY-MM-DD
 	}
 
+	function convertValueToHeatmap(heatmapColors, value) {
+		let rangeMin = heatmapColors[0]
+		let rangeMax = heatmapColors.at(-1)
+
+		value = Math.max(rangeMin.value, Math.min(rangeMax.value, value))
+
+		for (let i = 0, min, max; min = heatmapColors[i++], max = heatmapColors[i];) {
+			if (value >= max.value) continue
+			let normalized = (value - min.value) / (max.value - min.value)
+			let h = colorComponent(normalized, min.h, max.h)
+			let s = colorComponent(normalized, min.s, max.s)
+			let l = colorComponent(normalized, min.l, max.l)
+			return `hsl(${h}, ${s}%, ${l}%)`
+		}
+		return `hsl(${rangeMax.h}, ${rangeMax.s}%, ${rangeMax.l}%`
+	}
+
+	function colorComponent(normalized, rangeMin, rangeMax) {
+		return rangeMin + (rangeMax - rangeMin) * normalized
+	}
+
+	function convertAnythingToDate(something) {
+		return new Date(something)
+	}
+
+	function convertDateToFormattedDateString(date) {
+		let format = dateFormats.sameMonth
+		if (!isDateSameYear(today, date)) format = dateFormats.differentYear
+		else if (!isDateSameMonth(today, date)) format = dateFormats.differentMonth
+		return date.toLocaleDateString(navigator.language, format)
+	}
+
+	function convertDateToFormattedHours(time) {
+		return new Date(time).toLocaleTimeString(navigator.language, {hour: 'numeric'})
+	}
+
+	// Renderers
+
 	function renderHourlyForecast(date, hourlyForecasts) {
-		let formattedDate = formatDate(convertAnythingToDate(date))
+		let formattedDate = convertDateToFormattedDateString(convertAnythingToDate(date))
 		let forecastDoc = utils.createElement('section')
 		forecastDoc.append(
 			Object.assign(utils.createElement('h2'), {
@@ -313,51 +341,90 @@ let global = new EventBus({location: null})
 		return forecastDoc
 	}
 
+	class Heatmap {
+		constructor(forecastKey, heatmapClassName = forecastKey, icon = heatmapClassName) {
+			this.forecastKey = forecastKey
+			this.heatmapClassName = heatmapClassName
+			this.heatmapGradientColors = []
+			this.icon = icon
+		}
+
+		addGradientColor(forecast) {
+			this.heatmapGradientColors.push(forecast[this.forecastKey].color)
+		}
+
+		render() {
+			let element = Object.assign(utils.createElement('div'), {
+				className: this.heatmapClassName + ' heatmap',
+			})
+			element.append(renderIcon(this.icon))
+			element.style.setProperty('--gradient-stops', this.heatmapGradientColors.join(','))
+			return element
+		}
+	}
+
+	class DaylightHeatmap extends Heatmap {
+		constructor(forecastKey, heatmapClassName = forecastKey, icon = heatmapClassName, dawnIcon = 'sun', duskIcon = 'moon') {
+			super(forecastKey, heatmapClassName, icon)
+			this.dawnIcon = dawnIcon
+			this.duskIcon = duskIcon
+			this.dawnIndex = -1
+			this.duskIndex = -1
+		}
+
+		addGradientColor(forecast) {
+			let daylight = forecast[this.forecastKey]
+			if (daylight.isDawn) this.dawnIndex = this.heatmapGradientColors.length
+			if (daylight.isDusk) this.duskIndex = this.heatmapGradientColors.length
+			super.addGradientColor(forecast)
+		}
+
+		render() {
+			let element = super.render()
+			element.append(
+				utils.assignAttributes(renderIcon(this.dawnIcon), {class: 'icon dawn'}),
+				utils.assignAttributes(renderIcon(this.duskIcon), {class: 'icon dusk'}),
+			)
+			element.style.setProperty('--dawn-pos', this.dawnIndex / this.heatmapGradientColors.length * 100 + '%')
+			element.style.setProperty('--dusk-pos', this.duskIndex / this.heatmapGradientColors.length * 100 + '%')
+			return element
+		}
+	}
+
 	function renderHourlyVisualization(hourlyForecasts) {
 		// Heatmaps
 
-		let temperatureHeatmap = Object.assign(utils.createElement('div'), {className: 'tempearture heatmap'})
-		let precipitationHeatmap = Object.assign(utils.createElement('div'), {className: 'precipitation heatmap'})
-		let humidityHeatmap = Object.assign(utils.createElement('div'), {className: 'humidity heatmap'})
-		let dewPointHeatmap = Object.assign(utils.createElement('div'), {className: 'dew-point heatmap'})
-
-		let temperatureGradientStops = []
-		let precipitationGradientStops = []
-		let humidityGradientStops = []
-		let dewPointGradientStops = []
+		let heatmaps = [
+			new Heatmap('temperature'),
+			new Heatmap('precipitationProbability', 'precipitation'),
+			new Heatmap('relativeHumidity', 'humidity'),
+			new Heatmap('fog'),
+			new DaylightHeatmap('daylight'),
+		]
 
 		let tips = Object.assign(utils.createElement('div'), {className: 'tips'})
 
-		for (let i = 0, forecast; forecast = hourlyForecasts[i]; i++) {
-			temperatureGradientStops.push(valueToHeatmap(temperatureHeatmapColors, forecast.temperature.value))
-			precipitationGradientStops.push(valueToHeatmap(precipitationHeatmapColors, forecast.precipitationProbability.value))
-			humidityGradientStops.push(valueToHeatmap(humidityHeatmapColors, forecast.relativeHumidity.value))
-			dewPointGradientStops.push(dewPointHeatmapColors[+(forecast.temperature.value < forecast.dewPoint.value)])
+		for (let i = 0, forecast; forecast = hourlyForecasts[i++];) {
+			heatmaps.forEach(function (heatmap) {
+				heatmap.addGradientColor(forecast)
+			})
 
 			let tip = Object.assign(utils.createElement('div'), {
 				className: 'tip',
-				innerHTML: utils.html`
-					<div class="tip-content">
-						 <div>${formatHours(forecast.time)}</div>
-						 <div>Temperature: ${renderValueWithUnit(forecast.temperature)}</div>
-						 <div>Precipitation: ${renderValueWithUnit(forecast.precipitationProbability)}</div>
-						 <div>Relative humidity: ${renderValueWithUnit(forecast.relativeHumidity)}</div>
-						 <div>Dew point: ${renderValueWithUnit(forecast.dewPoint)}</div>
-					</div>
-				 `
+				tabIndex: 0,
 			})
+			let tipContent = Object.assign(utils.createElement('div'), {
+				className: 'tip-content'
+			})
+			tipContent.append(
+				renderTipItem('Temperature', 'temperature', forecast.temperature),
+				renderTipItem('Precpitation', 'precipitation', forecast.precipitationProbability),
+				renderTipItem('Relative humidity', 'humidity', forecast.relativeHumidity),
+				renderTipItem('', 'fog', forecast.fog),
+			)
+			tip.append(tipContent)
 			tips.append(tip)
 		} // <-- heatmap gradients
-
-		duplicateLast(temperatureGradientStops)
-		duplicateLast(precipitationGradientStops)
-		duplicateLast(humidityGradientStops)
-		duplicateLast(dewPointGradientStops)
-
-		temperatureHeatmap.style.setProperty('--gradient-stops', temperatureGradientStops.join(','))
-		precipitationHeatmap.style.setProperty('--gradient-stops', precipitationGradientStops.join(','))
-		humidityHeatmap.style.setProperty('--gradient-stops', humidityGradientStops.join(','))
-		dewPointHeatmap.style.setProperty('--gradient-stops', dewPointGradientStops.join(','))
 
 		// Grid lines
 
@@ -380,10 +447,9 @@ let global = new EventBus({location: null})
 		})
 
 		container.append(
-			temperatureHeatmap,
-			precipitationHeatmap,
-			humidityHeatmap,
-			dewPointHeatmap,
+			...heatmaps.map(function (heatmap) {
+				return heatmap.render()
+			}),
 			grid,
 			tips,
 		)
@@ -391,48 +457,31 @@ let global = new EventBus({location: null})
 		return container
 	}
 
+	function renderTipItem(label, icon, value) {
+		let container = utils.createElement('div')
+		container.append(
+			renderIcon(icon),
+			Object.assign(utils.createElement('span'), {textContent: label + ':'}),
+			Object.assign(utils.createElement('span'), {textContent: renderValueWithUnit(value)}),
+		)
+		return container
+	}
+
 	function renderValueWithUnit(forecast) {
-		return forecast.value + forecast.unit
+		return forecast.value + (forecast.unit ?? '')
 	}
 
-	function valueToHeatmap(heatmapColors, value) {
-		let rangeMin = heatmapColors[0]
-		let rangeMax = heatmapColors.at(-1)
-
-		value = Math.max(rangeMin.value, Math.min(rangeMax.value, value))
-
-		for (let i = 0, min, max; min = heatmapColors[i++], max = heatmapColors[i];) {
-			if (value >= max.value) continue
-			let normalized = (value - min.value) / (max.value - min.value)
-			let h = colorComponent(normalized, min.h, max.h)
-			let s = colorComponent(normalized, min.s, max.s)
-			let l = colorComponent(normalized, min.l, max.l)
-			return `hsl(${h}, ${s}%, ${l}%)`
-		}
-		return `hsl(${rangeMax.h}, ${rangeMax.s}%, ${rangeMax.l}%`
+	function renderIcon(icon) {
+		let use = utils.assignAttributes(utils.createSVG('use'), {href: 'icons.svg#' + icon})
+		let svg = utils.assignAttributes(utils.createSVG('svg'), {class: 'icon', 'aria-hidden': true})
+		svg.append(use)
+		return svg
 	}
 
-	function colorComponent(normalized, rangeMin, rangeMax) {
-		return rangeMin + (rangeMax - rangeMin) * normalized
-	}
+	// Utility functions
 
 	function asIs(something) {
 		return something
-	}
-
-	function convertAnythingToDate(something) {
-		return new Date(something)
-	}
-
-	function formatDate(date) {
-		let format = dateFormats.sameMonth
-		if (!isDateSameYear(today, date)) format = dateFormats.differentYear
-		else if (!isDateSameMonth(today, date)) format = dateFormats.differentMonth
-		return date.toLocaleDateString(navigator.language, format)
-	}
-
-	function formatHours(time) {
-		return new Date(time).toLocaleTimeString(navigator.language, {hour: 'numeric'})
 	}
 
 	function isDateSameMonth(dateA, dateB) {

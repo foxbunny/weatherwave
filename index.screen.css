@@ -1,5 +1,9 @@
+/* Reset */
+
 *, *::after, *::before {
     box-sizing: border-box;
+
+    --color: hsl(180, 28%, 83%);
 }
 
 html, body, p, h1, h2, h3, h4, h5, h6, ul {
@@ -30,32 +34,57 @@ fieldset {
     border: none;
 }
 
+/* Utility styles */
+
+.tip-content svg + span,
+#--visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+}
+
+.icon {
+    width: 1.2em;
+    height: 1.2em;
+    line-height: 1;
+    --stroke: #333;
+}
+
+/* Styles */
+
 body {
     font-family: sans-serif;
 }
 
 .hourly-visualization {
+    --vis-padding-top: 2em;
+    --vis-padding-left: 2em;
+    --vis-padding-right: 1em;
+    --vis-padding-bottom: 3em;
+    --vis-heatmap-gap: 0.5em;
+
     position: relative;
-    padding: 2em 1em 3em;
+    padding: var(--vis-padding-top) var(--vis-padding-right) var(--vis-padding-bottom) var(--vis-padding-left);
     display: flex;
     flex-direction: column;
-    gap: 0.5em;
+    gap: var(--vis-heatmap-gap);
 
     border: 1px solid #ddd;
 }
 
 .grid,
 .tips {
-    position: absolute;
     display: flex;
+    position: absolute;
+    top: 1.5em;
+    width: calc(100% - var(--vis-padding-left) - var(--vis-padding-right));
+    height: calc(100% - var(--vis-padding-top) - 1.5em);
 }
 
 .grid {
-    top: 1.5em;
     justify-content: space-between;
-    width: calc(100% - 2em);
-    height: calc(100% - 4em);
-
     color: #767676;
 }
 
@@ -93,14 +122,8 @@ body {
     text-align: center;
 }
 
-.tips {
-    top: 1.5em;
-    width: calc(100% - 2em);
-    height: calc(100% - 4em);
-}
-
-.tips:is(:focus, :focus-within) .tip:not(:hover):not(:focus) {
-    background: rgba(255, 255, 255, 0.3);
+.tips:is(:hover, :focus-within) .tip:not(:hover):not(:focus) {
+    background: rgba(255, 255, 255, 0.5);
 }
 
 .tip {
@@ -124,15 +147,45 @@ body {
     padding: 0.3em;
 
     border-radius: 0.2em;
-    background: #333;
-    color: #eee;
+    /*background: #333;*/
+    /*color: #eee;*/
     font-size: 0.875em;
+}
+
+.tip-content > * {
+    display: inline-flex;
+    gap: 0.2em;
+    align-items: center;
 }
 
 .heatmap {
     --gradient-stops: #ddd, #ddd;
+
+    display: flex;
+    align-items: center;
     height: 1em;
+    position: relative;
+
     border: 0.1em solid #ddd;
     border-radius: 0.5em;
     background-image: linear-gradient(90deg, var(--gradient-stops));
 }
+
+.heatmap .icon:first-of-type {
+    position: absolute;
+    right: calc(100% + 0.4em);
+}
+
+.daylight :is(.dawn, .dusk) {
+    position: absolute;
+    transform: translateX(-50%);
+}
+
+.daylight .dawn {
+    left: var(--dawn-pos);
+}
+
+.daylight .dusk {
+    left: var(--dusk-pos);
+}
+
