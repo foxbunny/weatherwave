@@ -2,7 +2,7 @@ let globalBusOptions = Object.seal({
 	debug: false,
 })
 
-class EventBus extends EventTarget {
+class EventBus {
 	static setGlobalOption(options) {
 		Object.assign(globalBusOptions, options)
 	}
@@ -12,11 +12,12 @@ class EventBus extends EventTarget {
 		options = {...globalBusOptions, ...options}
 		this.debug = options.debug
 		this.data = Object.seal(initialState)
+		this.eventTarget = new EventTarget()
 	}
 
 	set(key, value) {
 		this.data[key] = value
-		this.dispatchEvent('data', value)
+		this.dispatchEvent('data', this.data)
 		this.dispatchEvent('data.' + key, value)
 	}
 
@@ -24,9 +25,13 @@ class EventBus extends EventTarget {
 		return this.data[key] ?? defaultValue
 	}
 
+	addEventListener(type, listener) {
+		this.eventTarget.addEventListener(type, listener)
+	}
+
 	dispatchEvent(type, value) {
 		if (this.debug) console.debug('dispatchEvent', type, value)
-		super.dispatchEvent(new CustomEvent(type, {detail: value}))
+		this.eventTarget.dispatchEvent(new CustomEvent(type, {detail: value}))
 	}
 
 	dispatchGetRequest(type, url) {
