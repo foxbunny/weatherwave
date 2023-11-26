@@ -78,9 +78,12 @@ class GroupMap {
 	}
 }
 
-function debounce(ev, callback) {
-	clearTimeout(ev.currentTarget.$debounceTimer)
-	ev.currentTarget.$debounceTimer = setTimeout(callback, 200, ev)
+function debounce(callback, delay = 200) {
+	let timer
+	return function (...args) {
+		clearTimeout(timer)
+		timer = setTimeout(callback, delay, ...args)
+	}
 }
 
 let createElement = document.createElement.bind(document)

@@ -8,13 +8,11 @@ let global = new EventBus({location: null})
 { // Search and set location -->
 	let local = new EventBus()
 
-	_locationSearch.addEventListener('input', function (ev) {
-		utils.debounce(ev, function () {
-			let url = new URL('https://geocoding-api.open-meteo.com/v1/search')
-			url.searchParams.set('name', ev.target.value)
-			local.dispatchGetRequest('locationsFound', url)
-		})
-	})
+	_locationSearch.addEventListener('input', utils.debounce(function (ev) {
+		let url = new URL('https://geocoding-api.open-meteo.com/v1/search')
+		url.searchParams.set('name', ev.target.value)
+		local.dispatchGetRequest('locationsFound', url)
+	}))
 
 	local.addEventListener('locationsFound', function (ev) {
 		let locations = (ev.detail.response?.results || []).map(convertLocation)
