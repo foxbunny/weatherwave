@@ -217,7 +217,7 @@ let global = new EventBus({location: null})
 			})
 		}
 		return hourlyForecastsByDate
-	}
+	} // <-- convertHourlyForecastToGroup
 
 	function convertWeatherCodeToWeatherType(code) {
 		switch (code) {
@@ -275,7 +275,7 @@ let global = new EventBus({location: null})
 			case 99:
 				return weatherTypes.thunderstormWithHail
 		}
-	}
+	} // <-- convertWeatherCodeToWeatherType
 
 	function convertHourlyForecastToDatestamp(forecast) {
 		return convertDateToDatestamp(convertTimestampToDate(forecast.time))
@@ -405,7 +405,7 @@ let global = new EventBus({location: null})
 		)
 
 		return container
-	}
+	} // <-- renderHourlyVisualization
 
 	function renderTipItem(label, icon, value) {
 		let container = utils.createElement('div')
@@ -448,7 +448,7 @@ let global = new EventBus({location: null})
 			element.style.setProperty('--gradient-stops', this.heatmapGradientColors.join(','))
 			return element
 		}
-	}
+	} // <-- Heatmap
 
 	class DaylightHeatmap extends Heatmap {
 		constructor(forecastKey, heatmapClassName = forecastKey, icon = heatmapClassName, dawnIcon = 'sun', duskIcon = 'moon') {
@@ -476,7 +476,7 @@ let global = new EventBus({location: null})
 			element.style.setProperty('--dusk-pos', this.duskIndex / this.heatmapGradientColors.length * 100 + '%')
 			return element
 		}
-	}
+	} // <-- DaylightHeatmap
 
 	// Utility functions
 
