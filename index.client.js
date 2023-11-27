@@ -9,8 +9,10 @@ let global = new EventBus({location: null})
 	let local = new EventBus()
 
 	_locationSearch.addEventListener('input', utils.debounce(function (ev) {
+		let keyword = ev.target.value.trim()
+		if (!keyword) return
 		let url = new URL('https://geocoding-api.open-meteo.com/v1/search')
-		url.searchParams.set('name', ev.target.value)
+		url.searchParams.set('name', keyword)
 		local.dispatchGetRequest('locationsFound', url)
 	}))
 
