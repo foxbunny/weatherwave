@@ -346,15 +346,6 @@ let global = new EventBus({location: null})
 		getIcon() {
 			return this.icon
 		}
-
-		render() {
-			let element = Object.assign(utils.createElement('div'), {
-				className: this.heatmapClassName + ' heatmap',
-			})
-			element.append(renderIcon(this.icon))
-			element.style.setProperty('--gradient-stops', this.heatmapGradientColors.join(','))
-			return element
-		}
 	} // <-- Heatmap
 
 	class DaylightHeatmap extends SimpleHeatmap {
