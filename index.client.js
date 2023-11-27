@@ -415,11 +415,10 @@ let global = new EventBus({location: null})
 				className: 'tip-content'
 			})
 			tipContent.append(
+				Object.assign(utils.createElement('span'), {textContent: forecast.hour}),
 				renderTipItem('Temperature', 'temperature', forecast.temperature),
 				renderTipItem('Precipitation', 'precipitation', forecast.precipitationProbability),
 				renderTipItem('Relative humidity', 'humidity', forecast.relativeHumidity),
-				renderTipItem('Cloud cover', 'cloud', forecast.cloudCover),
-				renderTipItem('', 'fog', forecast.fog),
 			)
 			tip.append(tipContent)
 			tips.append(tip)
