@@ -380,8 +380,8 @@ let global = new EventBus({location: null})
 		let formattedDate = convertDateToFormattedDateString(convertAnythingToDate(date))
 		let forecastDoc = utils.createElement('section')
 		forecastDoc.append(
-			Object.assign(utils.createElement('h2'), {
-				textContent: 'Hourly forecast for ' + formattedDate,
+			Object.assign(utils.createElement('h3'), {
+				innerHTML: '<span>Hourly forecast for</span> ' + formattedDate,
 			}),
 			renderHourlyVisualization(hourlyForecasts),
 		)

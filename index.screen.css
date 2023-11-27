@@ -1,3 +1,23 @@
+/* Font face */
+
+@font-face {
+    font-family: 'Gabarito';
+    src: url('Gabarito-Regular.woff2') format('woff2'),
+    url('Gabarito-Regular.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Gabarito';
+    src: url('Gabarito-ExtraBold.woff2') format('woff2'),
+    url('Gabarito-ExtraBold.woff') format('woff');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}
+
 /* Reset */
 
 *, *::after, *::before {
@@ -37,6 +57,7 @@ fieldset {
 /* Utility styles */
 
 .tip-content svg + span,
+#_weatherForecast h3 > span,
 #--visually-hidden {
     position: absolute;
     width: 1px;
@@ -55,7 +76,7 @@ fieldset {
 /* Styles */
 
 body {
-    font-family: sans-serif;
+    font-family: Gabarito, sans-serif;
 }
 
 .hourly-visualization {
@@ -70,8 +91,6 @@ body {
     display: flex;
     flex-direction: column;
     gap: var(--vis-heatmap-gap);
-
-    border: 1px solid #ddd;
 }
 
 .grid,
@@ -85,7 +104,7 @@ body {
 
 .grid {
     justify-content: space-between;
-    color: #767676;
+    color: #72726c;
 }
 
 .grid-item {
@@ -93,7 +112,7 @@ body {
     display: flex;
     justify-content: center;
     width: 0;
-    border-left: 0.05em solid #ddd;
+    border-left: 1px solid #b9b7b5;
 }
 
 .grid-item:first-child,
@@ -122,7 +141,7 @@ body {
     text-align: center;
 }
 
-.tips:is(:hover, :focus-within) .tip:not(:hover):not(:focus) {
+.tips:is(:hover, :focus-within) .tip:is(:hover, :focus) {
     background: rgba(255, 255, 255, 0.5);
 }
 
@@ -143,17 +162,15 @@ body {
 
     position: absolute;
     z-index: 1;
-    top: 100%;
+    top: calc(100% + 0.5em);
     left: 0;
     right: 0;
     padding: 0.3em;
 
     border-radius: 0.2em;
-    border: 1px solid #ddd;
-    box-shadow: 0 0.1em 0.1em rgba(0, 0, 0, 0.2);
     font-size: 0.875em;
     white-space: nowrap;
-    background: #fff;
+    background: #fffdfa;
 }
 
 .tip-content > * {
@@ -170,7 +187,7 @@ body {
     height: 1em;
     position: relative;
 
-    border: 0.1em solid #ddd;
+    border: 1px solid #72726c;
     border-radius: 0.5em;
     background-image: linear-gradient(90deg, var(--gradient-stops));
 }
@@ -193,3 +210,32 @@ body {
     left: var(--dusk-pos);
 }
 
+#_weatherForecast {
+    display: flex;
+    flex-direction: column;
+    background: #ece8d6;
+}
+
+#_weatherForecast h2 {
+    padding: 0.5em 1em;
+    font-weight: bold;
+    letter-spacing: 0.1em;
+    text-align: center;
+    background: #72726c;
+    color: #ece8d6;
+}
+
+#_weatherForecast h3 {
+    margin: 7vw 0 5vw;
+
+    color: #72726c;
+    font-weight: bold;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.hourly-visualization {
+    max-width: 40em;
+    margin: 0 auto;
+}
