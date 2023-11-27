@@ -128,9 +128,9 @@ let global = new EventBus({location: null})
 		{value: 100, h: 215, s: 87, l: 38},
 	] // <-- humidityHeatmapColors
 	let cloudCoverHeatmapColors = [
-		[0, 193, 82, 69],
-		[50, 180, 28, 56],
-		[100, 180, 2, 56],
+		{value: 0, h: 193, s: 82, l: 69},
+		{value: 50, h: 180, s: 28, l: 69},
+		{value: 100, h: 180, s: 2, l: 69},
 	] // <-- cloudCoverHeatmapColors
 	let dayNightHeatmapColors = ['hsl(238, 8%, 10%)', 'hsl(193, 82%, 69%)']
 	let precipitationGradientColor = '#2fadc6'
@@ -196,11 +196,11 @@ let global = new EventBus({location: null})
 				unit: units.relative_humidity_2m,
 			} // <-- relativeHumidity
 			let hasFog = forecasts.temperature_2m[i] < forecasts.dew_point_2m[i]
-			let cloudCover = {
+			let cloudCover = utils.logAndReturn({
 				value: forecasts.cloud_cover[i],
 				color: convertValueToHeatmap(cloudCoverHeatmapColors, forecasts.cloud_cover[i]),
 				unit: units.cloud_cover,
-			} // <-- cloudCover
+			}) // <-- cloudCover
 			let fog = {
 				value: hasFog ? 'fog' : 'no fog',
 				color: dewPointHeatmapColors[+hasFog],
@@ -307,7 +307,7 @@ let global = new EventBus({location: null})
 			let l = colorComponent(normalized, min.l, max.l)
 			return `hsl(${h}, ${s}%, ${l}%)`
 		}
-		return `hsl(${rangeMax.h}, ${rangeMax.s}%, ${rangeMax.l}%`
+		return `hsl(${rangeMax.h}, ${rangeMax.s}%, ${rangeMax.l}%)`
 	}
 
 	function colorComponent(normalized, rangeMin, rangeMax) {
@@ -395,6 +395,7 @@ let global = new EventBus({location: null})
 			new SimpleHeatmap('temperature'),
 			new SimpleHeatmap('precipitationProbability', 'precipitation'),
 			new SimpleHeatmap('relativeHumidity', 'humidity'),
+			new SimpleHeatmap('cloudCover', 'cloud'),
 			new SimpleHeatmap('fog'),
 			new DaylightHeatmap('daylight'),
 		]
@@ -415,13 +416,14 @@ let global = new EventBus({location: null})
 			})
 			tipContent.append(
 				renderTipItem('Temperature', 'temperature', forecast.temperature),
-				renderTipItem('Precpitation', 'precipitation', forecast.precipitationProbability),
+				renderTipItem('Precipitation', 'precipitation', forecast.precipitationProbability),
 				renderTipItem('Relative humidity', 'humidity', forecast.relativeHumidity),
+				renderTipItem('Cloud cover', 'cloud', forecast.cloudCover),
 				renderTipItem('', 'fog', forecast.fog),
 			)
 			tip.append(tipContent)
 			tips.append(tip)
-		} // <-- heatmap gradients
+		} // <-- heatmap gradients & tips
 
 		// Grid lines
 
@@ -475,8 +477,10 @@ let global = new EventBus({location: null})
 
 	function renderHeatmap(heatmap) {
 		switch (heatmap.constructor) {
-			case SimpleHeatmap: return renderSimpleHeatmap(heatmap)
-			case DaylightHeatmap: return renderDaylightHeatmap(heatmap)
+			case SimpleHeatmap:
+				return renderSimpleHeatmap(heatmap)
+			case DaylightHeatmap:
+				return renderDaylightHeatmap(heatmap)
 		}
 	}
 

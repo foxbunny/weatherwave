@@ -94,6 +94,11 @@ function debounce(callback, delay = 500) {
 	}
 }
 
+function logAndReturn(something) {
+	console.log(something)
+	return something
+}
+
 function assignAttributes(node, obj) {
 	for (let name in obj) node.setAttribute(name, obj[name])
 	return node
@@ -131,6 +136,7 @@ export {
 	MultiMap,
 	GroupMap,
 	debounce,
+	logAndReturn,
 	createElement,
 	createSVG,
 	createFrag,
