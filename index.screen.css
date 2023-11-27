@@ -210,7 +210,7 @@ body {
     left: var(--dusk-pos);
 }
 
-#_weatherForecast {
+#_weatherForecast:not([hidden]) {
     display: flex;
     flex-direction: column;
     background: #ece8d6;
