@@ -62,7 +62,7 @@ body {
     --vis-padding-top: 2em;
     --vis-padding-left: 2em;
     --vis-padding-right: 1em;
-    --vis-padding-bottom: 3em;
+    --vis-padding-bottom: 1em;
     --vis-heatmap-gap: 0.5em;
 
     position: relative;
@@ -80,7 +80,7 @@ body {
     position: absolute;
     top: 1.5em;
     width: calc(100% - var(--vis-padding-left) - var(--vis-padding-right));
-    height: calc(100% - var(--vis-padding-top) - 1.5em);
+    height: calc(100% - var(--vis-padding-top));
 }
 
 .grid {
@@ -139,22 +139,26 @@ body {
     display: flex;
     gap: 1em;
     justify-content: center;
+    flex-wrap: wrap;
 
     position: absolute;
-    top: calc(100% + 0.5em);
+    z-index: 1;
+    top: 100%;
     left: 0;
     right: 0;
     padding: 0.3em;
 
     border-radius: 0.2em;
-    /*background: #333;*/
-    /*color: #eee;*/
+    border: 1px solid #ddd;
+    box-shadow: 0 0.1em 0.1em rgba(0, 0, 0, 0.2);
     font-size: 0.875em;
+    white-space: nowrap;
+    background: #fff;
 }
 
 .tip-content > * {
     display: inline-flex;
-    gap: 0.2em;
+    gap: 0.1em;
     align-items: center;
 }
 
