@@ -193,7 +193,7 @@ let global = new EventBus({location: null})
 			let relativeHumidity = {
 				value: forecasts.relative_humidity_2m[i],
 				color: convertValueToHeatmap(humidityHeatmapColors, forecasts.relative_humidity_2m[i]),
-				unit: units.relativeHumidity,
+				unit: units.relative_humidity_2m,
 			} // <-- relativeHumidity
 			let hasFog = forecasts.temperature_2m[i] < forecasts.dew_point_2m[i]
 			let cloudCover = {
