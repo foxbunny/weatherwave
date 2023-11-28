@@ -178,6 +178,9 @@ let global = new EventBus({location: undefined})
 
 	local.addEventListener('data.forecasts', function () {
 		let forecasts = local.get('forecasts')
+		_weatherForecast.querySelectorAll('section').forEach(function (section) {
+			section.remove()
+		})
 		_weatherForecast.append(...forecasts.entries().map(function ([date, forecasts]) {
 			return renderHourlyForecast(date, forecasts)
 		}))
