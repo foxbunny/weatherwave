@@ -3,10 +3,22 @@ import * as utils from './utils.client.js'
 
 EventBus.setGlobalOption({debug: new URLSearchParams(location.search).get('debug') == 'true'})
 
-let global = new EventBus({location: null})
+let global = new EventBus({location: undefined})
+
+{ // Storage -->
+	global.addEventListener('data.location', function () {
+		localStorage.lastLocation = JSON.stringify(global.get('location', {}))
+	})
+} // <-- Storage
 
 { // Search and set location -->
 	let local = new EventBus()
+
+	setTimeout(function () {
+		let lastLocation = JSON.parse(localStorage.lastLocation || null)
+		if (lastLocation) global.set('location', lastLocation)
+		else _locationSelector.hidden = false
+	})
 
 	_locationSearch.addEventListener('input', utils.debounce(function (ev) {
 		let keyword = ev.target.value.trim()
