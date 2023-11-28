@@ -10,30 +10,37 @@ let global = new EventBus({location: null})
 
 	_locationSearch.addEventListener('input', utils.debounce(function (ev) {
 		let keyword = ev.target.value.trim()
-		if (!keyword) return
-		let url = new URL('https://geocoding-api.open-meteo.com/v1/search')
-		url.searchParams.set('name', keyword)
-		local.dispatchGetRequest('locationsFound', url)
+		if (!keyword) {
+			local.dispatchEvent('locationsFound', {})
+		}
+		else {
+			let url = new URL('https://geocoding-api.open-meteo.com/v1/search')
+			url.searchParams.set('name', keyword)
+			local.dispatchGetRequest('locationsFound', url)
+		}
 	}))
+
+	_locationSearch.addEventListener('keypress', function (ev) {
+		if (ev.code == 'Escape') global.set('location', global.get('location'))
+	})
 
 	local.addEventListener('locationsFound', function (ev) {
 		let locations = (ev.detail.response?.results || []).map(convertLocation)
 		_locationList.replaceChildren()
-		if (locations.length) {
-			let blankOption = document.createElement('option')
-			blankOption.textContent = 'Select a location'
-			_locationList.append(blankOption, ...locations.map(renderLocationOption))
-		}
+		if (locations.length)
+			_locationList.append(...locations.map(renderLocationOption))
 	})
 
-	_locationList.addEventListener('change', function (ev) {
-		let selectedLocation = _locationList.selectedOptions[0]?._location
+	_locationList.addEventListener('click', function (ev) {
+		let selectedLocation = ev.target._location
 		if (!selectedLocation) return
 		global.set('location', selectedLocation)
 	})
 
 	global.addEventListener('data.location', function () {
 		_locationSelector.hidden = true
+		_locationList.replaceChildren()
+		_locationSearch.value = ''
 	})
 
 	global.addEventListener('changeLocation', function () {
@@ -42,10 +49,10 @@ let global = new EventBus({location: null})
 	})
 
 	function renderLocationOption(loc) {
-		let option = document.createElement('option')
-		option.textContent = loc.display
-		option._location = loc
-		return option
+		let button = document.createElement('button')
+		button.textContent = loc.display
+		button._location = loc
+		return button
 	}
 
 	function convertLocation(loc) {
@@ -62,7 +69,7 @@ let global = new EventBus({location: null})
 	let local = new EventBus()
 
 	global.addEventListener('data.location', function () {
-		_currentLocationDisplay.textContent = 'Showing weather for ' + global.get('location').display
+		_currentLocationDisplay.textContent = global.get('location').display
 		_currentLocation.hidden = false
 	})
 
@@ -135,7 +142,11 @@ let global = new EventBus({location: null})
 	let dayNightHeatmapColors = ['hsl(238, 8%, 10%)', 'hsl(193, 82%, 69%)']
 	let precipitationGradientColor = '#2fadc6'
 
-	let forecastApiUrl = 'https://api.open-meteo.com/v1/forecast?hourly=temperature_2m,relative_humidity_2m,dew_point_2m,precipitation_probability,precipitation,cloud_cover,weather_code,surface_pressure,wind_speed_10m,wind_direction_10m,is_day'
+	let forecastApiUrl = 'https://api.open-meteo.com/v1/forecast?hourly=temperature_2m,relative_humidity_2m,dew_point_2m,precipitation_probability,cloud_cover,weather_code,surface_pressure,wind_speed_10m,wind_direction_10m,is_day'
+
+	global.addEventListener('changeLocation', function () {
+		_weatherForecast.hidden = true
+	})
 
 	global.addEventListener('data.location', function () {
 		let loc = global.get('location')

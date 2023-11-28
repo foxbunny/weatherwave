@@ -13,22 +13,16 @@
 	</head>
 	<body>
 		<header>
-			<h1>Weatherwave</h1>
-
-			<div id="_locationSelector">
-				<label>
-					Search locations:
-					<input id="_locationSearch" type="text">
-				</label>
-				<label>
-					Select a location:
-					<select id="_locationList" name="location"></select>
-				</label>
-				<p>Use the search to populate the location list</p>
-			</div>
+			<h1>
+				<svg aria-hidden="true" id="logo"><use href="icons.svg#logo"/></svg>
+				<span>Weatherwave</span>
+			</h1>
 
 			<div id="_currentLocation" hidden>
-				<p id="_currentLocationDisplay"></p>
+				<p>
+					<span>Showing weather for</span>
+					<span id="_currentLocationDisplay"></span>
+				</p>
 				<button id="_changeLocation">Change location</button>
 			</div>
 		</header>
@@ -42,6 +36,16 @@
 		</noscript>
 
 		<main>
+			<div id="_locationSelector">
+				<label id="_locationSearchField">
+					<span>Search locations:</span>
+					<svg class="icon" aria-hidden="true"><use href="icons.svg#location"/></svg>
+					<input id="_locationSearch" type="text">
+					<svg class="icon" aria-hidden="true"><use href="icons.svg#search"/></svg>
+				</label>
+				<div id="_locationList"></div>
+			</div>
+
 			<section id="_weatherForecast" hidden>
 				<h2>10-day forecast</h2>
 			</section>
