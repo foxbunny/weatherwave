@@ -146,6 +146,7 @@ header svg {
     background: transparent;
     padding: 0.2em 2em;
     border-radius: 1em;
+    max-width: min(15em, calc(100vw - 2em));
 }
 
 #_locationSearchField svg {
@@ -174,7 +175,6 @@ header svg {
     border: 1px solid #72726c;
     border-radius: 0.5em;
     background: transparent;
-    white-space: nowrap;
     text-align: left;
 }
 
