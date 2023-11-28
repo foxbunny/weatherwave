@@ -53,6 +53,7 @@ let global = new EventBus({location: null})
 
 	function convertLocation(loc) {
 		return {
+			name: loc.name,
 			latitude: loc.latitude,
 			longitude: loc.longitude,
 			timezone: loc.timezone,
@@ -65,7 +66,7 @@ let global = new EventBus({location: null})
 	let local = new EventBus()
 
 	global.addEventListener('data.location', function () {
-		_currentLocationDisplay.textContent = global.get('location').display
+		_currentLocationDisplay.textContent = global.get('location').name
 		_currentLocation.hidden = false
 	})
 
