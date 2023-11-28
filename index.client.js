@@ -1,7 +1,7 @@
 import {EventBus} from './utils.client.js'
 import * as utils from './utils.client.js'
 
-EventBus.setGlobalOption({debug: true})
+EventBus.setGlobalOption({debug: new URLSearchParams(location.search).get('debug') == 'true'})
 
 let global = new EventBus({location: null})
 
@@ -19,10 +19,6 @@ let global = new EventBus({location: null})
 			local.dispatchGetRequest('locationsFound', url)
 		}
 	}))
-
-	_locationSearch.addEventListener('keypress', function (ev) {
-		if (ev.code == 'Escape') global.set('location', global.get('location'))
-	})
 
 	local.addEventListener('locationsFound', function (ev) {
 		let locations = (ev.detail.response?.results || []).map(convertLocation)
