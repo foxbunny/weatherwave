@@ -1,9 +1,8 @@
-import {EventBus} from './utils.client.js'
-import * as utils from './utils.client.js'
+import {Events, Timing, DOM, Maps} from './utils.client.js'
 
-EventBus.setGlobalOption({debug: new URLSearchParams(location.search).get('debug') == 'true'})
+Events.setGlobalOption({debug: new URLSearchParams(location.search).get('debug') == 'true'})
 
-let global = new EventBus({location: undefined})
+let global = new Events.EventBus({location: undefined})
 
 { // Storage -->
 	global.addEventListener('data.location', function () {
@@ -12,7 +11,7 @@ let global = new EventBus({location: undefined})
 } // <-- Storage
 
 { // Search and set location -->
-	let local = new EventBus()
+	let local = new Events.EventBus()
 
 	setTimeout(function () {
 		let lastLocation = JSON.parse(localStorage.lastLocation || null)
@@ -20,7 +19,7 @@ let global = new EventBus({location: undefined})
 		else _locationSelector.hidden = false
 	})
 
-	_locationSearch.addEventListener('input', utils.debounce(function (ev) {
+	_locationSearch.addEventListener('input', Timing.debounce(function (ev) {
 		let keyword = ev.target.value.trim()
 		if (!keyword) {
 			local.dispatchEvent('locationsFound', {})
@@ -75,7 +74,7 @@ let global = new EventBus({location: undefined})
 } // <-- Search and set location
 
 { // See current location -->
-	let local = new EventBus()
+	let local = new Events.EventBus()
 
 	global.addEventListener('data.location', function () {
 		_currentLocationDisplay.textContent = global.get('location').name
@@ -89,7 +88,7 @@ let global = new EventBus({location: undefined})
 } // <-- See current location
 
 { // See weather forecast -->
-	let local = new EventBus({forecasts: undefined})
+	let local = new Events.EventBus({forecasts: undefined})
 
 	let today = new Date()
 	let weatherTypes = {
@@ -190,7 +189,7 @@ let global = new EventBus({location: undefined})
 	// Converters
 
 	function convertHourlyForecastToGroup(forecasts, units) {
-		let hourlyForecastsByDate = new utils.GroupMap(convertHourlyForecastToDatestamp)
+		let hourlyForecastsByDate = new Maps.GroupMap(convertHourlyForecastToDatestamp)
 		let previousDaylightValue = forecasts.is_day[0]
 		for (let i = 0, time; time = forecasts.time[i]; i++) {
 			let hour = convertDateToFormattedHours(time)
@@ -392,9 +391,9 @@ let global = new EventBus({location: undefined})
 
 	function renderHourlyForecast(date, hourlyForecasts) {
 		let formattedDate = convertDateToFormattedDateString(convertAnythingToDate(date))
-		let forecastDoc = utils.createElement('section')
+		let forecastDoc = DOM.createElement('section')
 		forecastDoc.append(
-			Object.assign(utils.createElement('h3'), {
+			Object.assign(DOM.createElement('h3'), {
 				innerHTML: '<span>Hourly forecast for</span> ' + formattedDate,
 			}),
 			renderHourlyVisualization(hourlyForecasts),
@@ -414,22 +413,22 @@ let global = new EventBus({location: undefined})
 			new DaylightHeatmap('daylight'),
 		]
 
-		let tips = Object.assign(utils.createElement('div'), {className: 'tips'})
+		let tips = Object.assign(DOM.createElement('div'), {className: 'tips'})
 
 		for (let i = 0, forecast; forecast = hourlyForecasts[i++];) {
 			heatmaps.forEach(function (heatmap) {
 				heatmap.addGradientColor(forecast)
 			})
 
-			let tip = Object.assign(utils.createElement('div'), {
+			let tip = Object.assign(DOM.createElement('div'), {
 				className: 'tip',
 				tabIndex: 0,
 			})
-			let tipContent = Object.assign(utils.createElement('div'), {
+			let tipContent = Object.assign(DOM.createElement('div'), {
 				className: 'tip-content'
 			})
 			tipContent.append(
-				Object.assign(utils.createElement('span'), {textContent: forecast.hour}),
+				Object.assign(DOM.createElement('span'), {textContent: forecast.hour}),
 				renderTipItem('Temperature', 'temperature', forecast.temperature),
 				renderTipItem('Precipitation', 'precipitation', forecast.precipitationProbability),
 				renderTipItem('Relative humidity', 'humidity', forecast.relativeHumidity),
@@ -441,11 +440,11 @@ let global = new EventBus({location: undefined})
 		// Grid lines
 
 		let hourLineCount = 12
-		let grid = Object.assign(utils.createElement('div'), {className: 'grid'})
+		let grid = Object.assign(DOM.createElement('div'), {className: 'grid'})
 		grid.setAttribute('aria-hidden', true)
 
 		for (let i = 0; i < hourLineCount + 1; i++) {
-			let hour = Object.assign(utils.createElement('div'), {
+			let hour = Object.assign(DOM.createElement('div'), {
 				className: 'grid-item',
 				innerHTML: `<div class="grid-label">${i * 2 % 24}</div>`,
 			})
@@ -468,11 +467,11 @@ let global = new EventBus({location: undefined})
 	} // <-- renderHourlyVisualization
 
 	function renderTipItem(label, icon, value) {
-		let container = utils.createElement('div')
+		let container = DOM.createElement('div')
 		container.append(
 			renderIcon(icon),
-			Object.assign(utils.createElement('span'), {textContent: label + ':'}),
-			Object.assign(utils.createElement('span'), {textContent: renderValueWithUnit(value)}),
+			Object.assign(DOM.createElement('span'), {textContent: label + ':'}),
+			Object.assign(DOM.createElement('span'), {textContent: renderValueWithUnit(value)}),
 		)
 		return container
 	}
@@ -482,8 +481,8 @@ let global = new EventBus({location: undefined})
 	}
 
 	function renderIcon(icon) {
-		let use = utils.assignAttributes(utils.createSVG('use'), {href: 'icons.svg#' + icon})
-		let svg = utils.assignAttributes(utils.createSVG('svg'), {class: 'icon', 'aria-hidden': true})
+		let use = DOM.assignAttributes(DOM.createSVG('use'), {href: 'icons.svg#' + icon})
+		let svg = DOM.assignAttributes(DOM.createSVG('svg'), {class: 'icon', 'aria-hidden': true})
 		svg.append(use)
 		return svg
 	}
@@ -498,7 +497,7 @@ let global = new EventBus({location: undefined})
 	}
 
 	function renderSimpleHeatmap(heatmap) {
-		let element = Object.assign(utils.createElement('div'), {
+		let element = Object.assign(DOM.createElement('div'), {
 			className: heatmap.heatmapClassName + ' heatmap',
 		})
 		element.append(renderIcon(heatmap.icon))
@@ -509,8 +508,8 @@ let global = new EventBus({location: undefined})
 	function renderDaylightHeatmap(heatmap) {
 		let element = renderSimpleHeatmap(heatmap)
 		element.append(
-			utils.assignAttributes(renderIcon(heatmap.dawnIcon), {class: 'icon dawn'}),
-			utils.assignAttributes(renderIcon(heatmap.duskIcon), {class: 'icon dusk'}),
+			DOM.assignAttributes(renderIcon(heatmap.dawnIcon), {class: 'icon dawn'}),
+			DOM.assignAttributes(renderIcon(heatmap.duskIcon), {class: 'icon dusk'}),
 		)
 		element.style.setProperty('--dawn-pos', heatmap.dawnIndex / heatmap.heatmapGradientColors.length * 100 + '%')
 		element.style.setProperty('--dusk-pos', heatmap.duskIndex / heatmap.heatmapGradientColors.length * 100 + '%')
