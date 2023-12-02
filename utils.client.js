@@ -11,16 +11,6 @@ let Events = (function() {
 			this.eventTarget = new EventTarget()
 		}
 
-		set(key, value) {
-			this.data[key] = value
-			this.dispatchEvent('data', this.data)
-			this.dispatchEvent('data.' + key, value)
-		}
-
-		get(key, defaultValue) {
-			return this.data[key] ?? defaultValue
-		}
-
 		addEventListener(type, listener) {
 			this.eventTarget.addEventListener(type, listener)
 		}
@@ -126,45 +116,59 @@ let Logging = (function () {
 }()) // <-- Logging
 
 let DOM = (function () {
-	let safeStringMarker = Symbol('safe')
+	let observedElements = new WeakMap()
+	let observer = new IntersectionObserver(function (entries) {
+		for (let entry of entries) {
+			let callback = observedElements.get(entry.target)
+			if (!callback) continue
+			callback(entry)
+		}
+	})
 
-	function html(strings, ...values) {
-		let result = strings[0]
-		for (let i = 0; i < values.length; i++) {
-			let value = values[i]
-			if (value[safeStringMarker]) result += values.toString()
-			else result += ('' + value).replace(/[&"<>]/g, function (matchedStr) {
-				switch (matchedStr) {
-					case '&': return '&amp;'
-					case '"': return '&quot;'
-					case '<': return '&lt;'
-					case '>': return '&gt;'
-				}
-			})
-			result += strings[i + 1]
-		}
-		return {
-			[safeStringMarker]: true,
-			toString() { return result }
-		}
+	function addVisibilityListener(element, callback) {
+		observedElements.set(element, callback)
+		observer.observe(element)
 	}
 
-	let createElement = document.createElement.bind(document)
-	let createSVG = document.createElementNS.bind(document, 'http://www.w3.org/2000/svg')
-	let createFrag = document.createDocumentFragment.bind(document)
-
-	function assignAttributes(node, obj) {
-		for (let name in obj) node.setAttribute(name, obj[name])
-		return node
+	function removeVisibilityListener(element) {
+		observedElements.remove(element)
+		observer.unobserve(element)
 	}
 
 	return {
-		createElement,
-		createSVG,
-		createFrag,
-		assignAttributes,
+		addVisibilityListener,
+		removeVisibilityListener,
 	}
 }()) // <-- DOM
+
+let Template = (function () {
+	let templateIndex = {}
+
+	for (let template of document.querySelectorAll('template'))
+		templateIndex[template.dataset.name] = template.content
+
+	function createIterableSlotIndex(slotList) {
+		let index = {
+			[Symbol.iterator]: function () {
+				return slotList[Symbol.iterator]()
+			},
+		}
+		for (let slot of slotList) index[slot.dataset.slot] = slot
+		return index
+	}
+
+	function appendFromTemplate(rootNode, templateName) {
+		let content = templateIndex[templateName].cloneNode(true)
+		let children = [...content.children]
+		let slots = createIterableSlotIndex(content.querySelectorAll('[data-slot]'))
+		rootNode.append(content)
+		return {children, slots}
+	}
+
+	return {
+		appendFromTemplate,
+	}
+}())
 
 export {
 	Events,
@@ -172,4 +176,5 @@ export {
 	Timing,
 	Logging,
 	DOM,
+	Template,
 }

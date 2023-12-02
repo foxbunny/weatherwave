@@ -50,5 +50,122 @@
 				<h2>10-day forecast</h2>
 			</section>
 		</main>
+
+		<template data-name="forecast">
+			<section data-slot="container">
+				<h3>
+					<span>Hourly forecast for</span>
+					<span data-slot="hour"></span>
+				</h3>
+				<div class="hourly-visualization">
+					<div class="temperature heatmap" data-slot="temperature">
+						<svg class="icon" aria-hidden="true">
+							<use href="icons.svg#temperature"></use>
+						</svg>
+					</div>
+					<div class="precipitation heatmap" data-slot="precipitation">
+						<svg class="icon" aria-hidden="true">
+							<use href="icons.svg#precipitation"></use>
+						</svg>
+					</div>
+					<div class="humidity heatmap" data-slot="humidity">
+						<svg class="icon" aria-hidden="true">
+							<use href="icons.svg#humidity"></use>
+						</svg>
+					</div>
+					<div class="cloud heatmap" data-slot="cloud">
+						<svg class="icon" aria-hidden="true">
+							<use href="icons.svg#cloud"></use>
+						</svg>
+					</div>
+					<div class="fog heatmap" data-slot="fog">
+						<svg class="icon" aria-hidden="true">
+							<use href="icons.svg#fog"></use>
+						</svg>
+					</div>
+					<div class="daylight heatmap" data-slot="daylight">
+						<svg class="icon" aria-hidden="true">
+							<use href="icons.svg#daylight"></use>
+						</svg>
+						<svg class="icon dawn" aria-hidden="true">
+							<use href="icons.svg#sun"></use>
+						</svg>
+						<svg class="icon dusk" aria-hidden="true">
+							<use href="icons.svg#moon"></use>
+						</svg>
+					</div>
+					<div class="grid" aria-hidden="true">
+						<div class="grid-item">
+							<div class="grid-label">0</div>
+						</div>
+						<div class="grid-item">
+							<div class="grid-label">2</div>
+						</div>
+						<div class="grid-item">
+							<div class="grid-label">4</div>
+						</div>
+						<div class="grid-item">
+							<div class="grid-label">6</div>
+						</div>
+						<div class="grid-item">
+							<div class="grid-label">8</div>
+						</div>
+						<div class="grid-item">
+							<div class="grid-label">10</div>
+						</div>
+						<div class="grid-item">
+							<div class="grid-label">12</div>
+						</div>
+						<div class="grid-item">
+							<div class="grid-label">14</div>
+						</div>
+						<div class="grid-item">
+							<div class="grid-label">16</div>
+						</div>
+						<div class="grid-item">
+							<div class="grid-label">18</div>
+						</div>
+						<div class="grid-item">
+							<div class="grid-label">20</div>
+						</div>
+						<div class="grid-item">
+							<div class="grid-label">22</div>
+						</div>
+						<div class="grid-item">
+							<div class="grid-label">0</div>
+						</div>
+					</div>
+					<div class="tips" data-slot="tips"></div>
+				</div>
+			</section>
+		</template>
+
+		<template data-name="tip">
+			<div class="tip" tabindex="0">
+				<div class="tip-content">
+					<span data-slot="hour"></span>
+					<div>
+						<svg class="icon" aria-hidden="true">
+							<use href="icons.svg#temperature"></use>
+						</svg>
+						<span>Temperature:</span>
+						<span data-slot="temperature"></span>
+					</div>
+					<div>
+						<svg class="icon" aria-hidden="true">
+							<use href="icons.svg#precipitation"></use>
+						</svg>
+						<span>Precipitation:</span>
+						<span data-slot="precipitation"></span></div>
+					<div>
+						<svg class="icon" aria-hidden="true">
+							<use href="icons.svg#humidity"></use>
+						</svg>
+						<span>Relative humidity:</span>
+						<span data-slot="humidity"></span>
+					</div>
+				</div>
+			</div>
+		</template>
 	</body>
 </html>

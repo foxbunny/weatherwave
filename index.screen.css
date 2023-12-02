@@ -57,7 +57,7 @@ fieldset {
 /* Utility styles */
 
 .tip-content svg + span,
-#_weatherForecast h3 > span,
+#_weatherForecast h3 > span:first-child,
 #_locationSearchField > :first-child,
 #_currentLocation p > span:first-child,
 #--visually-hidden {

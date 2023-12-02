@@ -1,12 +1,13 @@
-import {Events, Timing, DOM, Maps} from './utils.client.js'
+import {Events, Timing, DOM, Maps, Template} from './utils.client.js'
 
 Events.setGlobalOption({debug: new URLSearchParams(location.search).get('debug') == 'true'})
 
-let global = new Events.EventBus({location: undefined})
+let global = new Events.EventBus()
+let selectedLocation
 
 { // Storage -->
-	global.addEventListener('data.location', function () {
-		localStorage.lastLocation = JSON.stringify(global.get('location', {}))
+	global.addEventListener('locationSet', function () {
+		localStorage.lastLocation = JSON.stringify(selectedLocation || {})
 	})
 } // <-- Storage
 
@@ -15,15 +16,17 @@ let global = new Events.EventBus({location: undefined})
 
 	setTimeout(function () {
 		let lastLocation = JSON.parse(localStorage.lastLocation || null)
-		if (lastLocation) global.set('location', lastLocation)
+		if (lastLocation) {
+			selectedLocation = lastLocation
+			global.dispatchEvent('locationSet')
+		}
 		else _locationSelector.hidden = false
 	})
 
 	_locationSearch.addEventListener('input', Timing.debounce(function (ev) {
 		let keyword = ev.target.value.trim()
-		if (!keyword) {
+		if (!keyword)
 			local.dispatchEvent('locationsFound', {})
-		}
 		else {
 			let url = new URL('https://geocoding-api.open-meteo.com/v1/search')
 			url.searchParams.set('name', keyword)
@@ -39,12 +42,13 @@ let global = new Events.EventBus({location: undefined})
 	})
 
 	_locationList.addEventListener('click', function (ev) {
-		let selectedLocation = ev.target._location
-		if (!selectedLocation) return
-		global.set('location', selectedLocation)
+		let loc = ev.target._location
+		if (!loc) return
+		selectedLocation = loc
+		global.dispatchEvent('locationSet')
 	})
 
-	global.addEventListener('data.location', function () {
+	global.addEventListener('locationSet', function () {
 		_locationSelector.hidden = true
 		_locationList.replaceChildren()
 		_locationSearch.value = ''
@@ -76,8 +80,8 @@ let global = new Events.EventBus({location: undefined})
 { // See current location -->
 	let local = new Events.EventBus()
 
-	global.addEventListener('data.location', function () {
-		_currentLocationDisplay.textContent = global.get('location').name
+	global.addEventListener('locationSet', function () {
+		_currentLocationDisplay.textContent = selectedLocation.name
 		_currentLocation.hidden = false
 	})
 
@@ -88,7 +92,9 @@ let global = new Events.EventBus({location: undefined})
 } // <-- See current location
 
 { // See weather forecast -->
-	let local = new Events.EventBus({forecasts: undefined})
+	let local = new Events.EventBus()
+
+	let forecastApiUrl = 'https://api.open-meteo.com/v1/forecast?hourly=temperature_2m,relative_humidity_2m,dew_point_2m,precipitation_probability,cloud_cover,weather_code,surface_pressure,wind_speed_10m,wind_direction_10m,is_day'
 
 	let today = new Date()
 	let weatherTypes = {
@@ -150,18 +156,19 @@ let global = new Events.EventBus({location: undefined})
 	let dayNightHeatmapColors = ['hsl(238, 8%, 10%)', 'hsl(193, 82%, 69%)']
 	let precipitationGradientColor = '#2fadc6'
 
-	let forecastApiUrl = 'https://api.open-meteo.com/v1/forecast?hourly=temperature_2m,relative_humidity_2m,dew_point_2m,precipitation_probability,cloud_cover,weather_code,surface_pressure,wind_speed_10m,wind_direction_10m,is_day'
+	let forecasts
+	let forecastNodes = []
+	let tipsObserver
 
 	global.addEventListener('changeLocation', function () {
 		_weatherForecast.hidden = true
 	})
 
-	global.addEventListener('data.location', function () {
-		let loc = global.get('location')
+	global.addEventListener('locationSet', function () {
 		let url = new URL(forecastApiUrl)
-		url.searchParams.set('latitude', loc.latitude)
-		url.searchParams.set('longitude', loc.longitude)
-		url.searchParams.set('timezone', loc.timezone)
+		url.searchParams.set('latitude', selectedLocation.latitude)
+		url.searchParams.set('longitude', selectedLocation.longitude)
+		url.searchParams.set('timezone', selectedLocation.timezone)
 		url.searchParams.set('forecast_days', 10)
 		local.dispatchGetRequest('forecastRetrieved', url)
 	})
@@ -172,18 +179,8 @@ let global = new Events.EventBus({location: undefined})
 
 	local.addEventListener('forecastRetrieved.success', function (ev) {
 		let response = ev.detail.response
-		local.set('forecasts', convertHourlyForecastToGroup(response.hourly, response.hourly_units))
-	})
-
-	local.addEventListener('data.forecasts', function () {
-		let forecasts = local.get('forecasts')
-		_weatherForecast.querySelectorAll('section').forEach(function (section) {
-			section.remove()
-		})
-		_weatherForecast.append(...forecasts.entries().map(function ([date, forecasts]) {
-			return renderHourlyForecast(date, forecasts)
-		}))
-		_weatherForecast.hidden = false
+		let forecasts = convertHourlyForecastToGroup(response.hourly, response.hourly_units)
+		renderAllForecasts(forecasts)
 	})
 
 	// Converters
@@ -209,7 +206,10 @@ let global = new Events.EventBus({location: undefined})
 			} // <-- temperature
 			let precipitationProbability = {
 				value: forecasts.precipitation_probability[i],
-				color: convertValueToHeatmap(precipitationHeatmapColors, forecasts.precipitation_probability[i]),
+				color: convertValueToHeatmap(
+					precipitationHeatmapColors,
+					forecasts.precipitation_probability[i],
+				),
 				unit: units.precipitation_probability,
 			} // <-- precipitationProbability
 			let relativeHumidity = {
@@ -351,120 +351,57 @@ let global = new Events.EventBus({location: undefined})
 		return new Date(time).toLocaleTimeString(navigator.language, {hour: 'numeric'})
 	}
 
-	// Data collectors
-
-	class SimpleHeatmap {
-		constructor(forecastKey, heatmapClassName = forecastKey, icon = heatmapClassName) {
-			this.forecastKey = forecastKey
-			this.heatmapClassName = heatmapClassName
-			this.heatmapGradientColors = []
-			this.icon = icon
-		}
-
-		addGradientColor(forecast) {
-			this.heatmapGradientColors.push(forecast[this.forecastKey].color)
-		}
-
-		getIcon() {
-			return this.icon
-		}
-	} // <-- Heatmap
-
-	class DaylightHeatmap extends SimpleHeatmap {
-		constructor(forecastKey, heatmapClassName = forecastKey, icon = heatmapClassName, dawnIcon = 'sun', duskIcon = 'moon') {
-			super(forecastKey, heatmapClassName, icon)
-			this.dawnIcon = dawnIcon
-			this.duskIcon = duskIcon
-			this.dawnIndex = -1
-			this.duskIndex = -1
-		}
-
-		addGradientColor(forecast) {
-			let daylight = forecast[this.forecastKey]
-			if (daylight.isDawn) this.dawnIndex = this.heatmapGradientColors.length
-			if (daylight.isDusk) this.duskIndex = this.heatmapGradientColors.length
-			super.addGradientColor(forecast)
-		}
-	} // <-- DaylightHeatmap
-
 	// Renderers
 
-	function renderHourlyForecast(date, hourlyForecasts) {
-		let formattedDate = convertDateToFormattedDateString(convertAnythingToDate(date))
-		let forecastDoc = DOM.createElement('section')
-		forecastDoc.append(
-			Object.assign(DOM.createElement('h3'), {
-				innerHTML: '<span>Hourly forecast for</span> ' + formattedDate,
-			}),
-			renderHourlyVisualization(hourlyForecasts),
-		)
-		return forecastDoc
+	function renderAllForecasts(forecasts) {
+		forecasts.entries().forEach(function ([date, hourlyForecast], index) {
+			let {children, slots} = forecastNodes[index] ??= Template.appendFromTemplate(_weatherForecast, 'forecast')
+			renderHourlyForecastForDate(slots, date, hourlyForecast)
+		})
+		_weatherForecast.hidden = false
 	}
 
-	function renderHourlyVisualization(hourlyForecasts) {
-		// Heatmaps
-
+	function renderHourlyForecastForDate(slots, date, hourlyForecasts) {
 		let heatmaps = [
-			new SimpleHeatmap('temperature'),
-			new SimpleHeatmap('precipitationProbability', 'precipitation'),
-			new SimpleHeatmap('relativeHumidity', 'humidity'),
-			new SimpleHeatmap('cloudCover', 'cloud'),
-			new SimpleHeatmap('fog'),
-			new DaylightHeatmap('daylight'),
+			createSimpleHeatmap('temperature'),
+			createSimpleHeatmap('precipitationProbability', 'precipitation'),
+			createSimpleHeatmap('relativeHumidity', 'humidity'),
+			createSimpleHeatmap('cloudCover', 'cloud'),
+			createSimpleHeatmap('fog'),
+			createDaylightHeatmap('daylight'),
 		]
 
-		let tips = Object.assign(DOM.createElement('div'), {className: 'tips'})
-
-		for (let i = 0, forecast; forecast = hourlyForecasts[i++];) {
+		for (let i = 0, forecast; forecast = hourlyForecasts[i++];)
 			heatmaps.forEach(function (heatmap) {
-				heatmap.addGradientColor(forecast)
+				heatmap.addForecast(forecast)
 			})
 
-			let tip = Object.assign(DOM.createElement('div'), {
-				className: 'tip',
-				tabIndex: 0,
-			})
-			let tipContent = Object.assign(DOM.createElement('div'), {
-				className: 'tip-content'
-			})
-			tipContent.append(
-				Object.assign(DOM.createElement('span'), {textContent: forecast.hour}),
-				renderTipItem('Temperature', 'temperature', forecast.temperature),
-				renderTipItem('Precipitation', 'precipitation', forecast.precipitationProbability),
-				renderTipItem('Relative humidity', 'humidity', forecast.relativeHumidity),
-			)
-			tip.append(tipContent)
-			tips.append(tip)
-		} // <-- heatmap gradients & tips
-
-		// Grid lines
-
-		let hourLineCount = 12
-		let grid = Object.assign(DOM.createElement('div'), {className: 'grid'})
-		grid.setAttribute('aria-hidden', true)
-
-		for (let i = 0; i < hourLineCount + 1; i++) {
-			let hour = Object.assign(DOM.createElement('div'), {
-				className: 'grid-item',
-				innerHTML: `<div class="grid-label">${i * 2 % 24}</div>`,
-			})
-			grid.append(hour)
-		} // <-- grid elements
-
-		// Assemble
-
-		let container = Object.assign(document.createElement('div'), {
-			className: 'hourly-visualization',
+		DOM.addVisibilityListener(slots.container, function (entry) {
+			if (entry.isIntersecting) renderTips(slots.tips, hourlyForecasts)
+			else destroyTips(slots.tips)
 		})
 
-		container.append(
-			...heatmaps.map(renderHeatmap),
-			grid,
-			tips,
-		)
+		slots.hour.textContent = convertDateToFormattedDateString(convertAnythingToDate(date))
+		heatmaps.forEach(function (heatmap) {
+			heatmap.applyToSlot(slots)
+		})
+	}
 
-		return container
-	} // <-- renderHourlyVisualization
+	function renderTips(slot, hourlyForecasts) {
+		let tips = document.createDocumentFragment()
+		for (let i = 0, forecast; forecast = hourlyForecasts[i++];) {
+			let { slots } = Template.appendFromTemplate(tips, 'tip')
+			slots.hour.textContent = forecast.hour
+			slots.temperature.textContent = renderValueWithUnit(forecast.temperature)
+			slots.precipitation.textContent = renderValueWithUnit(forecast.precipitationProbability)
+			slots.humidity.textContent = renderValueWithUnit(forecast.relativeHumidity)
+		}
+		slot.replaceChildren(tips)
+	}
+
+	function destroyTips(slot) {
+		slot.replaceChildren()
+	}
 
 	function renderTipItem(label, icon, value) {
 		let container = DOM.createElement('div')
@@ -480,47 +417,51 @@ let global = new Events.EventBus({location: undefined})
 		return forecast.value + (forecast.unit ?? '')
 	}
 
-	function renderIcon(icon) {
-		let use = DOM.assignAttributes(DOM.createSVG('use'), {href: 'icons.svg#' + icon})
-		let svg = DOM.assignAttributes(DOM.createSVG('svg'), {class: 'icon', 'aria-hidden': true})
-		svg.append(use)
-		return svg
-	}
+	function createSimpleHeatmap(forecastKey, slotName = forecastKey) {
+		let heatmapGradientColors = []
 
-	function renderHeatmap(heatmap) {
-		switch (heatmap.constructor) {
-			case SimpleHeatmap:
-				return renderSimpleHeatmap(heatmap)
-			case DaylightHeatmap:
-				return renderDaylightHeatmap(heatmap)
+		function addForecast(forecast) {
+			heatmapGradientColors.push(forecast[forecastKey].color)
+		}
+
+		function applyToSlot(slots) {
+			slots[slotName].style.setProperty('--gradient-stops', heatmapGradientColors.join(','))
+		}
+
+		return {
+			addForecast,
+			applyToSlot,
 		}
 	}
 
-	function renderSimpleHeatmap(heatmap) {
-		let element = Object.assign(DOM.createElement('div'), {
-			className: heatmap.heatmapClassName + ' heatmap',
-		})
-		element.append(renderIcon(heatmap.icon))
-		element.style.setProperty('--gradient-stops', heatmap.heatmapGradientColors.join(','))
-		return element
-	}
+	function createDaylightHeatmap(forecastKey, slotName = forecastKey) {
+		let heatmap = createSimpleHeatmap(forecastKey, slotName)
+		let dawnIndex = -1
+		let duskIndex = -1
+		let collectedForecastCount = 0
 
-	function renderDaylightHeatmap(heatmap) {
-		let element = renderSimpleHeatmap(heatmap)
-		element.append(
-			DOM.assignAttributes(renderIcon(heatmap.dawnIcon), {class: 'icon dawn'}),
-			DOM.assignAttributes(renderIcon(heatmap.duskIcon), {class: 'icon dusk'}),
-		)
-		element.style.setProperty('--dawn-pos', heatmap.dawnIndex / heatmap.heatmapGradientColors.length * 100 + '%')
-		element.style.setProperty('--dusk-pos', heatmap.duskIndex / heatmap.heatmapGradientColors.length * 100 + '%')
-		return element
+		function addForecast(forecast) {
+			heatmap.addForecast(forecast)
+			let daylight = forecast[forecastKey]
+			if (daylight.isDawn) dawnIndex = collectedForecastCount
+			if (daylight.isDusk) duskIndex = collectedForecastCount
+			collectedForecastCount++
+		}
+
+		function applyToSlot(slots) {
+			heatmap.applyToSlot(slots)
+			let slot = slots[slotName]
+			slot.style.setProperty('--dawn-pos', dawnIndex / collectedForecastCount * 100 + '%')
+			slot.style.setProperty('--dusk-pos', duskIndex / collectedForecastCount * 100 + '%')
+		}
+
+		return {
+			addForecast,
+			applyToSlot,
+		}
 	}
 
 	// Utility functions
-
-	function asIs(something) {
-		return something
-	}
 
 	function isDateSameMonth(dateA, dateB) {
 		return dateA.getMonth() == dateB.getMonth()
