@@ -1,4 +1,4 @@
-let {getElementByLabel, ELEMENT_TYPES: E} = DOMTest
+let {ELEMENT_TYPES: E} = DOMTest
 
 describe('Search and set location', function () {
 	before(function () {
