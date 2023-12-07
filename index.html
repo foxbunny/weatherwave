@@ -7,7 +7,7 @@
 
 		<link rel="stylesheet" media="screen" href="index.screen.css">
 
-		<script type="module" src="index.client.js"></script>
+		<script defer src="index.client.js"></script>
 
 		<title>Weatherwave - Weather at a glance</title>
 	</head>
@@ -18,40 +18,43 @@
 				<span>Weatherwave</span>
 			</h1>
 
-			<div id="_currentLocation" hidden>
+			<div id="current-location" role="region" aria-label="Current location" hidden>
 				<p>
 					<span>Showing weather for</span>
-					<span id="_currentLocationDisplay"></span>
+					<span id="current-location-display"></span>
 				</p>
-				<button id="_changeLocation">Change location</button>
+				<button id="change-location">Change location</button>
 			</div>
 		</header>
 
 		<noscript>
 			<h2>JavaScript required</h2>
 
-			<p>Weatherwave is a JavaScript web application. Your browser does not support JavaScript. Please
-				use a different
-				browser or enable JavaScript.</p>
+			<p>
+				Weatherwave is a JavaScript web application. Your browser does not support JavaScript. Please
+				use a different browser or enable JavaScript.
+			</p>
 		</noscript>
 
 		<main>
-			<div id="_locationSelector" hidden>
-				<label id="_locationSearchField">
+			<div id="location-selector" hidden>
+				<label id="location-search-field">
 					<span>Search locations:</span>
 					<svg class="icon" aria-hidden="true"><use href="icons.svg#location"/></svg>
 					<input id="_locationSearch" type="text">
 					<svg class="icon" aria-hidden="true"><use href="icons.svg#search"/></svg>
 				</label>
-				<div id="_locationList"></div>
+				<fieldset id="location-list">
+					<legend>Select a location</legend>
+				</fieldset>
 			</div>
 
-			<section id="_weatherForecast" hidden>
+			<section id="weather-forecast" hidden>
 				<h2>10-day forecast</h2>
 			</section>
 		</main>
 
-		<template data-name="forecast">
+		<template id="forecast">
 			<section data-slot="container">
 				<h3>
 					<span>Hourly forecast for</span>
@@ -140,7 +143,7 @@
 			</section>
 		</template>
 
-		<template data-name="tip">
+		<template id="tip">
 			<div class="tip" tabindex="0">
 				<div class="tip-content">
 					<span data-slot="hour"></span>

@@ -57,9 +57,9 @@ fieldset {
 /* Utility styles */
 
 .tip-content svg + span,
-#_weatherForecast h3 > span:first-child,
-#_locationSearchField > :first-child,
-#_currentLocation p > span:first-child,
+#weather-forecast h3 > span:first-child,
+#location-search-field > :first-child,
+#current-location p > span:first-child,
 #--visually-hidden {
     position: absolute;
     width: 1px;
@@ -109,18 +109,18 @@ header svg {
     height: 2em;
 }
 
-#_currentLocation {
+#current-location {
     flex: 1;
     text-align: right;
 }
 
-#_changeLocation {
+#change-location {
     border: 0;
     background: transparent;
     color: #ece8d6;
 }
 
-#_locationSelector:not([hidden]) {
+#location-selector:not([hidden]) {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -128,7 +128,7 @@ header svg {
     padding: 3em;
 }
 
-#_locationSearchField {
+#location-search-field {
     position: relative;
     display: inline-flex;
     align-items: center;
@@ -141,7 +141,7 @@ header svg {
     font-size: 120%;
 }
 
-#_locationSearchField input {
+#location-search-field input {
     border: none;
     background: transparent;
     padding: 0.2em 2em;
@@ -149,19 +149,19 @@ header svg {
     max-width: min(15em, calc(100vw - 2em));
 }
 
-#_locationSearchField svg {
+#location-search-field svg {
     position: absolute;
 }
 
-#_locationSearchField svg:first-of-type {
+#location-search-field svg:first-of-type {
     left: 0.2em;
 }
 
-#_locationSearchField svg:last-of-type {
+#location-search-field svg:last-of-type {
     right: 0.2em;
 }
 
-#_locationList:not([hidden]):not(:empty) {
+#location-list:not([hidden]):not(:empty) {
     display: flex;
     flex-direction: column;
     gap: 0.4em;
@@ -169,7 +169,7 @@ header svg {
     z-index: 1;
 }
 
-#_locationList button {
+#location-list button {
     padding: 0.5em;
 
     border: 1px solid #606057;
@@ -178,21 +178,21 @@ header svg {
     text-align: left;
 }
 
-#_locationList button:is(:hover, :focus) {
+#location-list button:is(:hover, :focus) {
     background: #faf8ee;
 }
 
-#_locationList button:not(:last-child) {
+#location-list button:not(:last-child) {
     border-bottom: 1px solid #b9b7b5;
 }
 
-#_weatherForecast:not([hidden]) {
+#weather-forecast:not([hidden]) {
     display: flex;
     flex-direction: column;
     background: #ece8d6;
 }
 
-#_weatherForecast h2 {
+#weather-forecast h2 {
     padding: 0.5em 1em;
     font-weight: bold;
     letter-spacing: 0.1em;
@@ -201,7 +201,7 @@ header svg {
     color: #ece8d6;
 }
 
-#_weatherForecast h3 {
+#weather-forecast h3 {
     margin: 7vw 0 5vw;
 
     color: #606057;
