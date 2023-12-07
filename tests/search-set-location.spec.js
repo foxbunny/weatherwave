@@ -24,7 +24,7 @@ test(
 		await page.goto('/')
 		await page.getByLabel('Search locations:').fill('belgrade')
 		let locationList = page.getByRole('group', {name: 'Select a location'})
-		await expect(await locationList.getByRole('button', {name: /^Belgrade/})).toHaveCount(10)
+		await expect(locationList.getByRole('button', {name: /^Belgrade/})).toHaveCount(10)
 	},
 )
 
@@ -43,8 +43,8 @@ test(
 		await searchField.fill('belgrade')
 		await searchField.fill('london')
 		let locationList = page.getByRole('group', {name: 'Select a location'})
-		await expect(await locationList.getByRole('button', {name: /^London/})).toHaveCount(10)
-		await expect(await locationList.getByRole('button', {name: /^Belgrade/})).toHaveCount(0)
+		await expect(locationList.getByRole('button', {name: /^London/})).toHaveCount(10)
+		await expect(locationList.getByRole('button', {name: /^Belgrade/})).toHaveCount(0)
 	},
 )
 
@@ -60,6 +60,6 @@ test(
 		await page.getByLabel('Search locations:').fill('belgrade')
 		await page.getByLabel('Search locations:').clear()
 		let locationList = page.getByRole('group', {name: 'Select a location'})
-		await expect(await locationList.getByRole('button')).toHaveCount(0)
+		await expect(locationList.getByRole('button')).toHaveCount(0)
 	},
 )
