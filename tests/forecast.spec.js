@@ -60,3 +60,12 @@ for (let bar of ['temperature', 'precipitation', 'humidity', 'cloud', 'fog', 'da
 			await testBar(page, bar)
 		},
 	)
+
+test(
+	'When I select a location and then hover over an hour, I see details about that hour.',
+	async function ({page}) {
+		await selectLocation(page)
+		await page.locator('.tip').filter({hasText: '6 AM Temperature: 2.2°C'}).hover()
+		await expect(page.locator('.tip-content').filter({hasText: '6 AM Temperature: 2.2°C Precipitation: 0% Relative humidity: 90%'})).toBeVisible()
+	},
+)

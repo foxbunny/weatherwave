@@ -52,6 +52,89 @@ let Maps = (function () {
 	}
 }()) // <-- Maps
 
+let GlobalEvents = (function () {
+	let eternalObserverListeners = new WeakMap()
+	let eternalObserver = new IntersectionObserver(function (entries) {
+		for (let entry of entries) {
+			let {target, ...intersection} = entry
+			let listener = eternalObserverListeners.get(target)
+			if (!listener) eternalObserver.unobserve(target)
+			else {
+				listener.callback(entry.target, entry)
+				if (listener.options.once) {
+					eternalObserverListeners.delete(entry.target)
+					eternalObserver.unobserve(entry.target)
+				}
+			}
+		}
+	})
+
+	function addVisibilityListener(target, callback, options) {
+		eternalObserverListeners.set(target, {callback, options})
+		eternalObserver.observe(target)
+	}
+
+	return {
+		addVisibilityListener,
+	}
+}()) // <-- GlobalEvents
+
+let Template = (function () {
+	let templateIndex = {}
+
+	for (let template of document.querySelectorAll('template'))
+		templateIndex[template.dataset.name] = template.content
+
+	function createIterableSlotIndex(slotList) {
+		let index = {
+			[Symbol.iterator]: function () {
+				return slotList[Symbol.iterator]()
+			},
+		}
+		for (let slot of slotList) index[slot.dataset.slot] = slot
+		return index
+	} // <-- createIterableSlotIndex
+
+	function appendFromTemplate(rootNode, templateName) {
+		let content = templateIndex[templateName].cloneNode(true)
+		let children = [...content.children]
+		let slots = createIterableSlotIndex(content.querySelectorAll('[data-slot]'))
+		rootNode.append(content)
+		return {children, slots}
+	} // <-- appendFromTemplate
+
+	return {
+		appendFromTemplate,
+	}
+}()) // <-- Template
+
+let Colors = (function () {
+	function colorComponent(normalized, rangeMin, rangeMax) {
+		return rangeMin + (rangeMax - rangeMin) * normalized
+	} // <-- colorComponent
+
+	function convertValueToHeatmap(heatmapColors, value) {
+		let rangeMin = heatmapColors[0]
+		let rangeMax = heatmapColors.at(-1)
+
+		value = Math.max(rangeMin.value, Math.min(rangeMax.value, value))
+
+		for (let i = 0, min, max; min = heatmapColors[i++], max = heatmapColors[i];) {
+			if (value >= max.value) continue
+			let normalized = (value - min.value) / (max.value - min.value)
+			let h = colorComponent(normalized, min.h, max.h)
+			let s = colorComponent(normalized, min.s, max.s)
+			let l = colorComponent(normalized, min.l, max.l)
+			return `hsl(${h}, ${s}%, ${l}%)`
+		}
+		return `hsl(${rangeMax.h}, ${rangeMax.s}%, ${rangeMax.l}%)`
+	} // <-- convertValueToHeatmap
+
+	return {
+		convertValueToHeatmap,
+	}
+}()) // <-- Color
+
 let API = (function () {
 	function request(url, callback) {
 		let xhr = new XMLHttpRequest()
@@ -92,34 +175,110 @@ let API = (function () {
 	}
 }()) // <-- API
 
-let Template = (function () {
-	let templateIndex = {}
-
-	for (let template of document.querySelectorAll('template'))
-		templateIndex[template.dataset.name] = template.content
-
-	function createIterableSlotIndex(slotList) {
-		let index = {
-			[Symbol.iterator]: function () {
-				return slotList[Symbol.iterator]()
-			},
-		}
-		for (let slot of slotList) index[slot.dataset.slot] = slot
-		return index
-	} // <-- createIterableSlotIndex
-
-	function appendFromTemplate(rootNode, templateName) {
-		let content = templateIndex[templateName].cloneNode(true)
-		let children = [...content.children]
-		let slots = createIterableSlotIndex(content.querySelectorAll('[data-slot]'))
-		rootNode.append(content)
-		return {children, slots}
-	} // <-- appendFromTemplate
-
-	return {
-		appendFromTemplate,
-	}
-}()) // <-- Template
+let Plugins = [
+	{
+		key: 'temperature',
+		extractFromResponse: function (forecasts, index) {
+			return {temperature: forecasts.temperature_2m[index]}
+		},
+		heatmapColors: [
+			{value: -50, h: 224, s: 50, l: 44},
+			{value: 5, h: 182, s: 48, l: 50},
+			{value: 10, h: 62, s: 100, l: 53},
+			{value: 35, h: 50, s: 100, l: 53},
+			{value: 45, h: 0, s: 100, l: 50},
+		],
+		addTipInfo: function (forecast, add) {
+			add({
+				slot: 'temperature',
+				apply: function (slot) {
+					slot.textContent = forecast.temperature + '°C'
+				},
+			})
+		},
+	},
+	{
+		key: 'precipitation',
+		extractFromResponse: function (forecasts, index) {
+			return {precipitation: forecasts.precipitation_probability[index]}
+		},
+		heatmapColors: [
+			{value: 0, h: 214, s: 100, l: 100},
+			{value: 30, h: 214, s: 62, l: 69},
+			{value: 100, h: 214, s: 86, l: 51},
+		],
+		addTipInfo: function (forecast, add) {
+			add({
+				slot: 'precipitation',
+				apply: function (slot) {
+					slot.textContent = forecast.precipitation + '%'
+				},
+			})
+		},
+	},
+	{
+		key: 'humidity',
+		extractFromResponse: function (forecasts, index) {
+			return {humidity: forecasts.relative_humidity_2m[index]}
+		},
+		heatmapColors: [
+			{value: 0, h: 215, s: 0, l: 80},
+			{value: 50, h: 215, s: 30, l: 80},
+			{value: 85, h: 215, s: 50, l: 80},
+			{value: 100, h: 215, s: 87, l: 38},
+		],
+		addTipInfo: function (forecast, add) {
+			add({
+				slot: 'humidity',
+				apply: function (slot) {
+					slot.textContent = forecast.humidity + '%'
+				},
+			})
+		},
+	},
+	{
+		key: 'cloud',
+		extractFromResponse: function (forecasts, index) {
+			return {cloud: forecasts.cloud_cover[index]}
+		},
+		heatmapColors: [
+			{value: 0, h: 193, s: 82, l: 69},
+			{value: 50, h: 180, s: 28, l: 69},
+			{value: 100, h: 180, s: 2, l: 69},
+		],
+	},
+	{
+		key: 'fog',
+		extractFromResponse: function (forecasts, index) {
+			return {fog: forecasts.temperature_2m[index] < forecasts.dew_point_2m[index]}
+		},
+		heatmapColors: [
+			{value: 0, h: 0, s: 0, l: 100},
+			{value: 1, h: 0, s: 0, l: 86},
+		],
+	},
+	{
+		key: 'daylight',
+		extractFromResponse: function (forecasts, index) {
+			let current = forecasts.is_day[index]
+			let prev = forecasts.is_day[index - 1]
+			let hourOfDay = index % 24 // NB: indexes continue for all hours of all days in the forecast
+			return {
+				daylight: forecasts.is_day[index],
+				dawn: prev ^ current && current == 1 && hourOfDay / 24 * 100 + '%',
+				dusk: prev ^ current && current == 0 && hourOfDay / 24 * 100 + '%',
+			}
+		},
+		heatmapColors: [
+			{value: 0, h: 238, s: 8, l: 10},
+			{value: 1, h: 193, s: 82, l: 69},
+		],
+		addMarker: function (forecast, add) {
+			if (forecast.dawn) add({property: '--dawn-pos', value: forecast.dawn})
+			if (forecast.dusk) add({property: '--dusk-pos', value: forecast.dusk})
+		},
+	},
+]
 
 searchAndSetLocation({
 	elements: {
@@ -230,114 +389,6 @@ function showAndChangeCurrentLocation(options) {
 	}
 } // <-- showAndChangeCurrentLocation
 
-let Colors = (function () {
-	function colorComponent(normalized, rangeMin, rangeMax) {
-		return rangeMin + (rangeMax - rangeMin) * normalized
-	} // <-- colorComponent
-
-	function convertValueToHeatmap(heatmapColors, value) {
-		let rangeMin = heatmapColors[0]
-		let rangeMax = heatmapColors.at(-1)
-
-		value = Math.max(rangeMin.value, Math.min(rangeMax.value, value))
-
-		for (let i = 0, min, max; min = heatmapColors[i++], max = heatmapColors[i];) {
-			if (value >= max.value) continue
-			let normalized = (value - min.value) / (max.value - min.value)
-			let h = colorComponent(normalized, min.h, max.h)
-			let s = colorComponent(normalized, min.s, max.s)
-			let l = colorComponent(normalized, min.l, max.l)
-			return `hsl(${h}, ${s}%, ${l}%)`
-		}
-		return `hsl(${rangeMax.h}, ${rangeMax.s}%, ${rangeMax.l}%)`
-	} // <-- convertValueToHeatmap
-
-	return {
-		convertValueToHeatmap,
-	}
-}()) // <-- Color
-
-let Plugins = [
-	{
-		key: 'temperature',
-		extractFromResponse: function (forecasts, index) {
-			return {temperature: forecasts.temperature_2m[index]}
-		},
-		heatmapColors: [
-			{value: -50, h: 224, s: 50, l: 44},
-			{value: 5, h: 182, s: 48, l: 50},
-			{value: 10, h: 62, s: 100, l: 53},
-			{value: 35, h: 50, s: 100, l: 53},
-			{value: 45, h: 0, s: 100, l: 50},
-		],
-	},
-	{
-		key: 'precipitation',
-		extractFromResponse: function (forecasts, index) {
-			return {precipitation: forecasts.precipitation_probability[index]}
-		},
-		heatmapColors: [
-			{value: 0, h: 214, s: 100, l: 100},
-			{value: 30, h: 214, s: 62, l: 69},
-			{value: 100, h: 214, s: 86, l: 51},
-		],
-	},
-	{
-		key: 'humidity',
-		extractFromResponse: function (forecasts, index) {
-			return {humidity: forecasts.relative_humidity_2m[index]}
-		},
-		heatmapColors: [
-			{value: 0, h: 215, s: 0, l: 80},
-			{value: 50, h: 215, s: 30, l: 80},
-			{value: 85, h: 215, s: 50, l: 80},
-			{value: 100, h: 215, s: 87, l: 38},
-		],
-	},
-	{
-		key: 'cloud',
-		extractFromResponse: function (forecasts, index) {
-			return {cloud: forecasts.cloud_cover[index]}
-		},
-		heatmapColors: [
-			{value: 0, h: 193, s: 82, l: 69},
-			{value: 50, h: 180, s: 28, l: 69},
-			{value: 100, h: 180, s: 2, l: 69},
-		],
-	},
-	{
-		key: 'fog',
-		extractFromResponse: function (forecasts, index) {
-			return {fog: forecasts.temperature_2m[index] < forecasts.dew_point_2m[index]}
-		},
-		heatmapColors: [
-			{value: 0, h: 0, s: 0, l: 100},
-			{value: 1, h: 0, s: 0, l: 86},
-		],
-	},
-	{
-		key: 'daylight',
-		extractFromResponse: function (forecasts, index) {
-			let current = forecasts.is_day[index]
-			let prev = forecasts.is_day[index - 1]
-			let hourOfDay = index % 24 // NB: indexes continue for all hours of all days in the forecast
-			return {
-				daylight: forecasts.is_day[index],
-				dawn: prev ^ current && current == 1 && hourOfDay / 24 * 100 + '%',
-				dusk: prev ^ current && current == 0 && hourOfDay / 24 * 100 + '%',
-			}
-		},
-		heatmapColors: [
-			{value: 0, h: 238, s: 8, l: 10},
-			{value: 1, h: 193, s: 82, l: 69},
-		],
-		addMarker: function (forecast, add) {
-			if (forecast.dawn) add({property: '--dawn-pos', value: forecast.dawn})
-			if (forecast.dusk) add({property: '--dusk-pos', value: forecast.dusk})
-		}
-	},
-]
-
 function showWeatherForecast(options) {
 	let {region} = options.elements
 	let {Bus, API} = options
@@ -381,20 +432,24 @@ function showWeatherForecast(options) {
 
 	function renderHourlyForecasts(hourlyForecastsByDate) {
 		for (let [date, hourlyForecasts] of hourlyForecastsByDate) {
+			// Section heading
 			let {slots} = Template.appendFromTemplate(region, 'forecast')
 			let regionId = 'forecast-' + date
 			slots.container.setAttribute('aria-labelledby', regionId)
 			slots.heading.id = regionId
 			slots.hour.textContent = formatForecastDate(date)
 
+			// Visualizations
 			let slotToHeatmapStops = new Maps.MultiMap()
 			let slotToMarkers = new Maps.MultiMap()
+			let hourToTipInfo = new Maps.MultiMap()
 
-			for (let forecast of hourlyForecasts)
+			for (let hour = 0, forecast; forecast = hourlyForecasts[hour]; hour++)
 				for (let plugin of Plugins) {
 					let pluginSlot = slots[plugin.key]
 					slotToHeatmapStops.set(pluginSlot, Colors.convertValueToHeatmap(plugin.heatmapColors, forecast[plugin.key]))
 					plugin.addMarker?.(forecast, slotToMarkers.set.bind(slotToMarkers, pluginSlot))
+					plugin.addTipInfo?.(forecast, hourToTipInfo.set.bind(hourToTipInfo, hour))
 				}
 
 			for (let [node, colors] of slotToHeatmapStops)
@@ -403,6 +458,14 @@ function showWeatherForecast(options) {
 			for (let [node, markers] of slotToMarkers)
 				for (let marker of markers)
 					node.style.setProperty(marker.property, marker.value)
+
+			GlobalEvents.addVisibilityListener(slots.tips, function (tipsContainer) {
+				for (let [hour, tipInfos] of hourToTipInfo) {
+					let {slots} = Template.appendFromTemplate(tipsContainer, 'tip')
+					slots.hour.textContent = new Date(1, 1, 1, hour).toLocaleTimeString(navigator.languag, {hour: 'numeric'})
+					for (let {slot, apply} of tipInfos) apply(slots[slot])
+				}
+			}, {once: true})
 		}
 	}
 
