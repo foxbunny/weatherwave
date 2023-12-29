@@ -1,14 +1,3 @@
-// NB: colors are all in HSL color space
-let Config = Object.freeze({
-	temperatureHeatmapColors: [
-		{value: -50, h: 224, s: 50, l: 44},
-		{value: 5, h: 182, s: 48, l: 50},
-		{value: 10, h: 62, s: 100, l: 53},
-		{value: 35, h: 50, s: 100, l: 53},
-		{value: 45, h: 0, s: 100, l: 50},
-	], // <-- temperatureHeatmapColors
-})
-
 let Bus = (function () {
 	function send(message, payload) {
 		window.dispatchEvent(new CustomEvent('#' + message, {detail: payload}))
