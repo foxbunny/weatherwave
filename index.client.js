@@ -175,7 +175,7 @@ let API = (function () {
 	}
 }()) // <-- API
 
-let Plugins = [
+let WeatherParameters = [
 	{
 		key: 'temperature',
 		extractFromResponse: function (forecasts, index) {
@@ -410,8 +410,8 @@ function showWeatherForecast(options) {
 
 		for (let i = 0, time; time = forecasts.time[i]; i++) {
 			let hourlyForecast = {}
-			for (let plugin of Plugins)
-				Object.assign(hourlyForecast, plugin.extractFromResponse(forecasts, i))
+			for (let parmeter of WeatherParameters)
+				Object.assign(hourlyForecast, parmeter.extractFromResponse(forecasts, i))
 			hourlyForecastsByDate.add({...hourlyForecast, time})
 		}
 		return hourlyForecastsByDate
@@ -446,11 +446,11 @@ function showWeatherForecast(options) {
 			let hourToTipInfo = new Maps.MultiMap()
 
 			for (let hour = 0, forecast; forecast = hourlyForecasts[hour]; hour++)
-				for (let plugin of Plugins) {
-					let pluginSlot = slots[plugin.key]
-					slotToHeatmapStops.set(pluginSlot, Colors.convertValueToHeatmap(plugin.heatmapColors, forecast[plugin.key]))
-					plugin.addMarker?.(forecast, slotToMarkers.set.bind(slotToMarkers, pluginSlot))
-					plugin.addTipInfo?.(forecast, hourToTipInfo.set.bind(hourToTipInfo, hour))
+				for (let parameter of WeatherParameters) {
+					let parameterSlot = slots[parameter.key]
+					slotToHeatmapStops.set(parameterSlot, Colors.convertValueToHeatmap(parameter.heatmapColors, forecast[parameter.key]))
+					parameter.addMarker?.(forecast, slotToMarkers.set.bind(slotToMarkers, parameterSlot))
+					parameter.addTipInfo?.(forecast, hourToTipInfo.set.bind(hourToTipInfo, hour))
 				}
 
 			for (let [node, colors] of slotToHeatmapStops)
