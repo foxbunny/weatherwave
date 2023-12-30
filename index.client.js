@@ -326,6 +326,7 @@ function searchAndSetLocation(options) {
 	}
 
 	function handleLocationSelect(ev) {
+		if (!ev.target._loc) return
 		let loc = ev.target._loc
 		hide()
 		Bus.send('locationSelected', loc)
