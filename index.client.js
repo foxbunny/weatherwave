@@ -307,6 +307,7 @@ showWeatherForecast({
 	Bus,
 	API,
 })
+saveLocation({Bus})
 
 function searchAndSetLocation(options) {
 	let {region, searchField, locationList} = options.elements
@@ -481,3 +482,13 @@ function showWeatherForecast(options) {
 		})
 	}
 } // <-- showWeatherForecast
+
+function saveLocation(options) {
+	Bus.on('locationSelected', storeLocation)
+
+	if (localStorage.lastLocation) Bus.send('locationSelected', JSON.parse(localStorage.lastLocation))
+
+	function storeLocation(loc) {
+		localStorage.lastLocation = JSON.stringify(loc)
+	}
+}
