@@ -60,6 +60,7 @@ fieldset {
 #weather-forecast h3 > span:first-child,
 #location-search-field > :first-child,
 #current-location p > span:first-child,
+#location-list legend,
 #--visually-hidden {
     position: absolute;
     width: 1px;
