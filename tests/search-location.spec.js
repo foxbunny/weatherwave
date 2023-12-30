@@ -7,7 +7,7 @@ test(
 	'Shown initially',
 	async function ({page}) {
 		await page.goto('/')
-		await expect(await page.getByLabel('Search locations:')).toBeVisible()
+		await expect(page.getByLabel('Search locations:')).toBeVisible()
 	},
 )
 
