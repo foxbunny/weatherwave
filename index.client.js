@@ -317,6 +317,7 @@ function searchAndSetLocation(options) {
 	searchField.addEventListener('input', handleSearch)
 	locationList.addEventListener('click', handleLocationSelect)
 	Bus.on('locationSelected', hide)
+	Bus.on('requestChangeLocation', show)
 
 	function handleSearch(ev) {
 		let keyword = ev.target.value.trim()
@@ -375,11 +376,17 @@ function showAndChangeCurrentLocation(options) {
 	let {region, display, changeTrigger} = options.elements
 	let {Bus} = options
 
+	changeTrigger.addEventListener('click', requestChangeLocation)
 	Bus.on('locationSelected', updateDetails)
 
 	function updateDetails(loc) {
 		display.innerText = loc.name
 		show()
+	}
+
+	function requestChangeLocation() {
+		hide()
+		Bus.send('requestChangeLocation')
 	}
 
 	function show() {
@@ -398,6 +405,7 @@ function showWeatherForecast(options) {
 	today.setHours(0, 0, 0, 0)
 
 	Bus.on('locationSelected', render)
+	Bus.on('requestChangeLocation', hide)
 
 	function render(loc) {
 		API.getWeatherForecast(loc, function (forecasts) {
@@ -485,10 +493,15 @@ function showWeatherForecast(options) {
 
 function saveLocation(options) {
 	Bus.on('locationSelected', storeLocation)
+	Bus.on('requestChangeLocation', clearStoredLocation)
 
 	if (localStorage.lastLocation) Bus.send('locationSelected', JSON.parse(localStorage.lastLocation))
 
 	function storeLocation(loc) {
 		localStorage.lastLocation = JSON.stringify(loc)
+	}
+
+	function clearStoredLocation() {
+		delete localStorage.lastLocation
 	}
 }

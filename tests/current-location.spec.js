@@ -13,3 +13,14 @@ test(
 		await expect(currentLocation.getByRole('button', {name: 'Change location'})).toBeVisible()
 	},
 )
+
+test(
+	'When I have a location selected, and I click "Change location", I see a search field',
+	async function ({page}) {
+		await page.getByLabel('Search locations:').fill('Belgrade')
+		await page.getByRole('button', {name: 'Belgrade, Central Serbia, Serbia'}).click()
+		await page.getByRole('button', {name: 'Change location'}).click()
+		await expect(page.getByRole('button', {name: 'Change location'})).toBeHidden()
+		await expect(page.getByLabel('Search locations:')).toBeVisible()
+	},
+)
