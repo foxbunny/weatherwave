@@ -504,4 +504,4 @@ function saveLocation(options) {
 	function clearStoredLocation() {
 		delete localStorage.lastLocation
 	}
-}
+} // <-- saveLocation
