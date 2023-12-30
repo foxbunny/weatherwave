@@ -1,3 +1,5 @@
+// Library
+
 let Bus = (function () {
 	function send(message, payload) {
 		window.dispatchEvent(new CustomEvent('#' + message, {detail: payload}))
@@ -13,6 +15,7 @@ let Bus = (function () {
 		send,
 		on,
 	}
+
 }()) // <-- Bus
 
 let Maps = (function () {
@@ -175,110 +178,7 @@ let API = (function () {
 	}
 }()) // <-- API
 
-let WeatherParameters = [
-	{
-		key: 'temperature',
-		extractFromResponse: function (forecasts, index) {
-			return {temperature: forecasts.temperature_2m[index]}
-		},
-		heatmapColors: [
-			{value: -50, h: 224, s: 50, l: 44},
-			{value: 5, h: 182, s: 48, l: 50},
-			{value: 10, h: 62, s: 100, l: 53},
-			{value: 35, h: 50, s: 100, l: 53},
-			{value: 45, h: 0, s: 100, l: 50},
-		],
-		addTipInfo: function (forecast, add) {
-			add({
-				slot: 'temperature',
-				apply: function (slot) {
-					slot.textContent = forecast.temperature + '°C'
-				},
-			})
-		},
-	},
-	{
-		key: 'precipitation',
-		extractFromResponse: function (forecasts, index) {
-			return {precipitation: forecasts.precipitation_probability[index]}
-		},
-		heatmapColors: [
-			{value: 0, h: 214, s: 100, l: 100},
-			{value: 30, h: 214, s: 62, l: 69},
-			{value: 100, h: 214, s: 86, l: 51},
-		],
-		addTipInfo: function (forecast, add) {
-			add({
-				slot: 'precipitation',
-				apply: function (slot) {
-					slot.textContent = forecast.precipitation + '%'
-				},
-			})
-		},
-	},
-	{
-		key: 'humidity',
-		extractFromResponse: function (forecasts, index) {
-			return {humidity: forecasts.relative_humidity_2m[index]}
-		},
-		heatmapColors: [
-			{value: 0, h: 215, s: 0, l: 80},
-			{value: 50, h: 215, s: 30, l: 80},
-			{value: 85, h: 215, s: 50, l: 80},
-			{value: 100, h: 215, s: 87, l: 38},
-		],
-		addTipInfo: function (forecast, add) {
-			add({
-				slot: 'humidity',
-				apply: function (slot) {
-					slot.textContent = forecast.humidity + '%'
-				},
-			})
-		},
-	},
-	{
-		key: 'cloud',
-		extractFromResponse: function (forecasts, index) {
-			return {cloud: forecasts.cloud_cover[index]}
-		},
-		heatmapColors: [
-			{value: 0, h: 193, s: 82, l: 69},
-			{value: 50, h: 180, s: 28, l: 69},
-			{value: 100, h: 180, s: 2, l: 69},
-		],
-	},
-	{
-		key: 'fog',
-		extractFromResponse: function (forecasts, index) {
-			return {fog: forecasts.temperature_2m[index] < forecasts.dew_point_2m[index]}
-		},
-		heatmapColors: [
-			{value: 0, h: 0, s: 0, l: 100},
-			{value: 1, h: 0, s: 0, l: 86},
-		],
-	},
-	{
-		key: 'daylight',
-		extractFromResponse: function (forecasts, index) {
-			let current = forecasts.is_day[index]
-			let prev = forecasts.is_day[index - 1]
-			let hourOfDay = index % 24 // NB: indexes continue for all hours of all days in the forecast
-			return {
-				daylight: forecasts.is_day[index],
-				dawn: prev ^ current && current == 1 && hourOfDay / 24 * 100 + '%',
-				dusk: prev ^ current && current == 0 && hourOfDay / 24 * 100 + '%',
-			}
-		},
-		heatmapColors: [
-			{value: 0, h: 238, s: 8, l: 10},
-			{value: 1, h: 193, s: 82, l: 69},
-		],
-		addMarker: function (forecast, add) {
-			if (forecast.dawn) add({property: '--dawn-pos', value: forecast.dawn})
-			if (forecast.dusk) add({property: '--dusk-pos', value: forecast.dusk})
-		},
-	},
-]
+// Initialization
 
 searchAndSetLocation({
 	elements: {
@@ -308,6 +208,8 @@ showWeatherForecast({
 	API,
 })
 saveLocation({Bus})
+
+// Features
 
 function searchAndSetLocation(options) {
 	let {region, searchField, locationList} = options.elements
@@ -404,6 +306,111 @@ function showWeatherForecast(options) {
 	let today = new Date()
 	today.setHours(0, 0, 0, 0)
 
+	let weatherParameters = [
+		{
+			key: 'temperature',
+			extractFromResponse: function (forecasts, index) {
+				return {temperature: forecasts.temperature_2m[index]}
+			},
+			heatmapColors: [
+				{value: -50, h: 224, s: 50, l: 44},
+				{value: 5, h: 182, s: 48, l: 50},
+				{value: 10, h: 62, s: 100, l: 53},
+				{value: 35, h: 50, s: 100, l: 53},
+				{value: 45, h: 0, s: 100, l: 50},
+			],
+			addTipInfo: function (forecast, add) {
+				add({
+					slot: 'temperature',
+					apply: function (slot) {
+						slot.textContent = forecast.temperature + '°C'
+					},
+				})
+			},
+		},
+		{
+			key: 'precipitation',
+			extractFromResponse: function (forecasts, index) {
+				return {precipitation: forecasts.precipitation_probability[index]}
+			},
+			heatmapColors: [
+				{value: 0, h: 214, s: 100, l: 100},
+				{value: 30, h: 214, s: 62, l: 69},
+				{value: 100, h: 214, s: 86, l: 51},
+			],
+			addTipInfo: function (forecast, add) {
+				add({
+					slot: 'precipitation',
+					apply: function (slot) {
+						slot.textContent = forecast.precipitation + '%'
+					},
+				})
+			},
+		},
+		{
+			key: 'humidity',
+			extractFromResponse: function (forecasts, index) {
+				return {humidity: forecasts.relative_humidity_2m[index]}
+			},
+			heatmapColors: [
+				{value: 0, h: 215, s: 0, l: 80},
+				{value: 50, h: 215, s: 30, l: 80},
+				{value: 85, h: 215, s: 50, l: 80},
+				{value: 100, h: 215, s: 87, l: 38},
+			],
+			addTipInfo: function (forecast, add) {
+				add({
+					slot: 'humidity',
+					apply: function (slot) {
+						slot.textContent = forecast.humidity + '%'
+					},
+				})
+			},
+		},
+		{
+			key: 'cloud',
+			extractFromResponse: function (forecasts, index) {
+				return {cloud: forecasts.cloud_cover[index]}
+			},
+			heatmapColors: [
+				{value: 0, h: 193, s: 82, l: 69},
+				{value: 50, h: 180, s: 28, l: 69},
+				{value: 100, h: 180, s: 2, l: 69},
+			],
+		},
+		{
+			key: 'fog',
+			extractFromResponse: function (forecasts, index) {
+				return {fog: forecasts.temperature_2m[index] < forecasts.dew_point_2m[index]}
+			},
+			heatmapColors: [
+				{value: 0, h: 0, s: 0, l: 100},
+				{value: 1, h: 0, s: 0, l: 86},
+			],
+		},
+		{
+			key: 'daylight',
+			extractFromResponse: function (forecasts, index) {
+				let current = forecasts.is_day[index]
+				let prev = forecasts.is_day[index - 1]
+				let hourOfDay = index % 24 // NB: indexes continue for all hours of all days in the forecast
+				return {
+					daylight: forecasts.is_day[index],
+					dawn: prev ^ current && current == 1 && hourOfDay / 24 * 100 + '%',
+					dusk: prev ^ current && current == 0 && hourOfDay / 24 * 100 + '%',
+				}
+			},
+			heatmapColors: [
+				{value: 0, h: 238, s: 8, l: 10},
+				{value: 1, h: 193, s: 82, l: 69},
+			],
+			addMarker: function (forecast, add) {
+				if (forecast.dawn) add({property: '--dawn-pos', value: forecast.dawn})
+				if (forecast.dusk) add({property: '--dusk-pos', value: forecast.dusk})
+			},
+		},
+	]
+
 	Bus.on('locationSelected', render)
 	Bus.on('requestChangeLocation', hide)
 
@@ -419,7 +426,7 @@ function showWeatherForecast(options) {
 
 		for (let i = 0, time; time = forecasts.time[i]; i++) {
 			let hourlyForecast = {}
-			for (let parmeter of WeatherParameters)
+			for (let parmeter of weatherParameters)
 				Object.assign(hourlyForecast, parmeter.extractFromResponse(forecasts, i))
 			hourlyForecastsByDate.add({...hourlyForecast, time})
 		}
@@ -455,7 +462,7 @@ function showWeatherForecast(options) {
 			let hourToTipInfo = new Maps.MultiMap()
 
 			for (let hour = 0, forecast; forecast = hourlyForecasts[hour]; hour++)
-				for (let parameter of WeatherParameters) {
+				for (let parameter of weatherParameters) {
 					let parameterSlot = slots[parameter.key]
 					slotToHeatmapStops.set(parameterSlot, Colors.convertValueToHeatmap(parameter.heatmapColors, forecast[parameter.key]))
 					parameter.addMarker?.(forecast, slotToMarkers.set.bind(slotToMarkers, parameterSlot))
