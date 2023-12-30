@@ -41,23 +41,21 @@ test(
 	},
 )
 
-async function testBar(page, slotName) {
-	await selectLocation(page)
-	let bar1 = page
-		.getByRole('region', {name: 'Hourly forecast for today'})
-		.locator('[data-slot=' + slotName + ']')
-	let bar2 = page
-		.getByRole('region', {name: 'Hourly forecast for Wed, Dec 13'})
-		.locator('[data-slot=' + slotName + ']')
-	await expect(bar1).toHaveScreenshot({threshold: 0.05})
-	await expect(bar2).toHaveScreenshot({threshold: 0.05})
-}
-
-for (let bar of ['temperature', 'precipitation', 'humidity', 'cloud', 'fog', 'daylight'])
+for (let parameter of ['temperature', 'precipitation', 'humidity', 'cloud', 'fog', 'daylight'])
 	test(
-		`When I select a location, the ${bar} bar is shown`,
+		`When I select a location, the ${parameter} bar is shown`,
 		async function ({page}) {
-			await testBar(page, bar)
+			await selectLocation(page)
+			let bar1 = page
+				.getByRole('region', {name: 'Hourly forecast for today'})
+				.locator('[data-slot=' + parameter + ']')
+				.first()
+			let bar2 = page
+				.getByRole('region', {name: 'Hourly forecast for Wed, Dec 13'})
+				.locator('[data-slot=' + parameter + ']')
+				.first()
+			await expect(bar1).toHaveScreenshot({threshold: 0.05})
+			await expect(bar2).toHaveScreenshot({threshold: 0.05})
 		},
 	)
 
