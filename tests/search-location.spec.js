@@ -47,7 +47,7 @@ test(
 	async function ({ page }) {
 		await page.getByLabel('Search locations:').fill('belgrade')
 		let locationList = page.getByRole('group', {name: 'Select a location'})
-		locationList.getByRole('button', {name: 'Belgrade, Central Serbia'}).click()
+		await locationList.getByRole('button', {name: 'Belgrade, Central Serbia'}).click()
 		await expect(locationList).toBeHidden()
 	},
 )
