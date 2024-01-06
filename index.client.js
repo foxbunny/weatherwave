@@ -180,6 +180,7 @@ let API = (function () {
 
 // Initialization
 
+navigator.serviceWorker?.register(new URL('service-worker.js', import.meta.url))
 searchAndSetLocation({
 	elements: {
 		region: document.getElementById('location-selector'),
