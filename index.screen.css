@@ -91,7 +91,6 @@ header {
     gap: 1em;
     padding: 1em;
 
-    --logo-color: currentColor;
     background: #2f2f29;
     color: #fff;
 }
@@ -108,6 +107,7 @@ header h1 {
 header svg {
     width: 5em;
     height: 2em;
+    fill: currentColor;
 }
 
 #current-location {
