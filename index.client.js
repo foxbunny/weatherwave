@@ -55,6 +55,17 @@ let Maps = (function () {
 	}
 }()) // <-- Maps
 
+let Iter = (function () {
+	function* indexed(iterable) {
+		let i = 0
+		for (let element of iterable) yield [i++, element]
+	}
+
+	return {
+		indexed,
+	}
+}())
+
 let GlobalEvents = (function () {
 	let eternalObserverListeners = new WeakMap()
 	let eternalObserver = new IntersectionObserver(function (entries) {
@@ -98,16 +109,27 @@ let Template = (function () {
 		return index
 	} // <-- createIterableSlotIndex
 
-	function appendFromTemplate(rootNode, templateName) {
-		let content = templateIndex[templateName].cloneNode(true)
-		let children = [...content.children]
-		let slots = createIterableSlotIndex(content.querySelectorAll('[data-slot]'))
-		rootNode.append(content)
-		return {children, slots}
-	} // <-- appendFromTemplate
+	function createSlotIndex(node) {
+		return new Proxy(node, {
+			get: function (target, prop) {
+				if (target.dataset.slot == prop) return node
+				return target.querySelector('[data-slot="' + prop + '"]')
+			},
+		})
+	} // <-- createSlotIndex
+
+	function ensureChildAtIndex(rootNode, index, templateName) {
+		let node = rootNode.children[index]
+		if (!node) {
+			node = templateIndex[templateName].cloneNode(true).firstElementChild
+			rootNode.append(node)
+		}
+		return node
+	} // <-- replaceNodeAtIndex
 
 	return {
-		appendFromTemplate,
+		createSlotIndex,
+		ensureChildAtIndex,
 	}
 }()) // <-- Template
 
@@ -128,7 +150,7 @@ let Colors = (function () {
 			let h = colorComponent(normalized, min.h, max.h)
 			let s = colorComponent(normalized, min.s, max.s)
 			let l = colorComponent(normalized, min.l, max.l)
-			return `hsl(${h}, ${s}%, ${l}%)`
+			return `hsl(${h.toFixed(2)}, ${s.toFixed(2)}%, ${l.toFixed(2)}%)`
 		}
 		return `hsl(${rangeMax.h}, ${rangeMax.s}%, ${rangeMax.l}%)`
 	} // <-- convertValueToHeatmap
@@ -451,8 +473,8 @@ function showWeatherForecast(options) {
 
 		for (let i = 0, time; time = forecasts.time[i]; i++) {
 			let hourlyForecast = {}
-			for (let parmeter of weatherParameters)
-				Object.assign(hourlyForecast, parmeter.extractFromResponse(forecasts, i))
+			for (let parameter of weatherParameters)
+				Object.assign(hourlyForecast, parameter.extractFromResponse(forecasts, i))
 			hourlyForecastsByDate.add({...hourlyForecast, time})
 		}
 		return hourlyForecastsByDate
@@ -473,17 +495,17 @@ function showWeatherForecast(options) {
 	}
 
 	function renderHourlyForecasts(hourlyForecastsByDate) {
-		for (let [date, hourlyForecasts] of hourlyForecastsByDate) {
-			// Section heading
-			let {slots} = Template.appendFromTemplate(region, 'forecast')
+		for (let [i, forecastData] of Iter.indexed(hourlyForecastsByDate)) {
+			let [date, hourlyForecasts] = forecastData
+			let slots = Template.createSlotIndex(Template.ensureChildAtIndex(region, i + 1, 'forecast'))
 			let regionId = 'forecast-' + date
+
 			slots.container.setAttribute('aria-labelledby', regionId)
 			slots.heading.id = regionId
 			slots.hour.textContent = formatForecastDate(date)
 
 			// Visualizations
 			let slotToHeatmapStops = new Maps.MultiMap()
-			let slotToMarkers = new Maps.MultiMap()
 			let hourToTipInfo = new Maps.MultiMap()
 
 			for (let hour = 0, forecast; forecast = hourlyForecasts[hour]; hour++)
@@ -497,13 +519,10 @@ function showWeatherForecast(options) {
 			for (let [node, colors] of slotToHeatmapStops)
 				node.style.setProperty('--gradient-stops', colors.join(','))
 
-			for (let [node, markers] of slotToMarkers)
-				for (let marker of markers)
-					node.style.setProperty(marker.property, marker.value)
-
 			GlobalEvents.addVisibilityListener(slots.tips, function (tipsContainer) {
-				for (let [hour, tipInfos] of hourToTipInfo) {
-					let {slots} = Template.appendFromTemplate(tipsContainer, 'tip')
+				for (let [i, tipData] of Iter.indexed(hourToTipInfo)) {
+					let [hour, tipInfos] = tipData
+					let slots = Template.createSlotIndex(Template.ensureChildAtIndex(tipsContainer, i, 'tip'))
 					slots.hour.textContent = new Date(1, 1, 1, hour).toLocaleTimeString(navigator.languag, {hour: 'numeric'})
 					for (let {slot, apply} of tipInfos) apply(slots[slot])
 				}
