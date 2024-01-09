@@ -380,6 +380,30 @@ function showWeatherForecast(options) {
 			],
 		},
 		{
+			key: 'wind',
+			extractFromResponse: function (forecasts, index) {
+				return {wind: forecasts.wind_speed_10m[index], windDirection: forecasts.wind_direction_10m[index]}
+			},
+			heatmapColors: [
+				{value: 0, h: 188, s: 0, l: 100},
+				{value: 5, h: 188, s: 50, l: 96},
+				{value: 28, h: 200, s: 78, l: 93},
+				{value: 49, h: 235, s: 87, l: 95},
+				{value: 74, h: 44, s: 87, l: 95},
+				{value: 102, h: 10, s: 87, l: 95},
+				{value: 300, h: 292, s: 97, l: 98},
+			],
+			modifySlot: function (forecast, slot, hour) {
+				if (hour % 2) return
+				let directionIndicator = Object.assign(document.createElementNS('http://www.w3.org/2000/svg', 'svg'), {
+					innerHTML: '<use href="icons.svg#compass"/>',
+				})
+				directionIndicator.setAttribute('class', 'wind-direction')
+				directionIndicator.style.setProperty('--dir', forecast.windDirection)
+				slot.append(directionIndicator)
+			},
+		},
+		{
 			key: 'fog',
 			extractFromResponse: function (forecasts, index) {
 				return {fog: forecasts.temperature_2m[index] < forecasts.dew_point_2m[index]}
@@ -405,9 +429,9 @@ function showWeatherForecast(options) {
 				{value: 0, h: 238, s: 8, l: 10},
 				{value: 1, h: 193, s: 82, l: 69},
 			],
-			addMarker: function (forecast, add) {
-				if (forecast.dawn) add({property: '--dawn-pos', value: forecast.dawn})
-				if (forecast.dusk) add({property: '--dusk-pos', value: forecast.dusk})
+			modifySlot: function (forecast, slot) {
+				if (forecast.dawn) slot.style.setProperty('--dawn-pos', forecast.dawn)
+				if (forecast.dusk) slot.style.setProperty('--dusk-pos', forecast.dusk)
 			},
 		},
 	]
@@ -466,7 +490,7 @@ function showWeatherForecast(options) {
 				for (let parameter of weatherParameters) {
 					let parameterSlot = slots[parameter.key]
 					slotToHeatmapStops.set(parameterSlot, Colors.convertValueToHeatmap(parameter.heatmapColors, forecast[parameter.key]))
-					parameter.addMarker?.(forecast, slotToMarkers.set.bind(slotToMarkers, parameterSlot))
+					parameter.modifySlot?.(forecast, parameterSlot, hour)
 					parameter.addTipInfo?.(forecast, hourToTipInfo.set.bind(hourToTipInfo, hour))
 				}
 

@@ -41,7 +41,7 @@ test(
 	},
 )
 
-for (let parameter of ['temperature', 'precipitation', 'humidity', 'cloud', 'fog', 'daylight'])
+for (let parameter of ['temperature', 'precipitation', 'humidity', 'cloud', 'wind', 'fog', 'daylight'])
 	test(
 		`When I select a location, the ${parameter} bar is shown`,
 		async function ({page}) {

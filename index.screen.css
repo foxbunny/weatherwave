@@ -322,6 +322,7 @@ header svg {
 
     display: flex;
     align-items: center;
+    justify-content: space-around;
     height: 1em;
     position: relative;
 
@@ -333,6 +334,14 @@ header svg {
 .heatmap .icon:first-of-type {
     position: absolute;
     right: calc(100% + 0.4em);
+}
+
+.wind-direction {
+    --dir: 0;
+
+    transform: rotate(calc(var(--dir) * 1deg));
+    width: 1em;
+    height: 1em;
 }
 
 .daylight :is(.dawn, .dusk) {
